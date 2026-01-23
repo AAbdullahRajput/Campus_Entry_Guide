@@ -1,0 +1,35 @@
+name: campus_entry_guide
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  speech_to_text: ^7.3.0
+  image_picker: ^1.1.0
+  google_fonts: ^6.1.0
+  shared_preferences: ^2.1.0
+  google_sign_in: ^6.1.1
+  firebase_auth: ^4.6.5
+  http: ^1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/splash3.jpg
+    - assets/images/login.jpg
+    - assets/images/register.jpg
+    
+    
+
