@@ -1,3 +1,4 @@
+import 'package:campus_entry_guide/complaint_page.dart';
 import 'package:campus_entry_guide/map_screen.dart';
 import 'package:campus_entry_guide/notification_page.dart';
 import 'package:flutter/material.dart';
@@ -357,19 +358,30 @@ class _StudentDashboardState extends State<StudentDashboard> with WidgetsBinding
   bool _showWelcome = false;
   bool _showCards = false;
   int _unreadCount = 0;
+  int _unreadComplaintsCount = 0;
   Timer? _refreshTimer;
 
   @override
-  void initState() {
-    super.initState();
-    _startAnimations();
+void initState() {
+  super.initState();
+  _startAnimations();
+  _fetchUnreadCount();
+  _fetchUnreadComplaintsCount(); // ✅ ADD THIS
+  WidgetsBinding.instance.addObserver(this);
+  // ✅ Auto-refresh every 10 seconds
+  _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
     _fetchUnreadCount();
-    WidgetsBinding.instance.addObserver(this);
-    // ✅ Auto-refresh every 10 seconds
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      _fetchUnreadCount();
-    });
+    _fetchUnreadComplaintsCount(); // ✅ ADD THIS
+  });
+}
+
+@override
+void didChangeAppLifecycleState(AppLifecycleState state) {
+  if (state == AppLifecycleState.resumed) {
+    _fetchUnreadCount();
+    _fetchUnreadComplaintsCount(); // ✅ ADD THIS
   }
+}
 
   void _startAnimations() {
     // AppBar animation
@@ -386,13 +398,6 @@ class _StudentDashboardState extends State<StudentDashboard> with WidgetsBinding
     Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) setState(() => _showCards = true);
     });
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _fetchUnreadCount();  // ✅ Refresh when app comes to foreground
-    }
   }
 
   Future<void> _fetchUnreadCount() async {
@@ -426,6 +431,32 @@ class _StudentDashboardState extends State<StudentDashboard> with WidgetsBinding
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
+Future<void> _fetchUnreadComplaintsCount() async {
+  try {
+    final session = await LocalStorage.getUserSession();
+    if (session == null) return;
+    
+    final response = await http.post(
+      Uri.parse('http://192.168.100.63:3000/get-unviewed-complaints-count'), // ✅ CHANGED
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': session['userId'],
+        'userRole': session['role'],
+      }),
+    ).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _unreadComplaintsCount = data['unviewedCount'] ?? 0; // ✅ CHANGED
+      });
+      print('📊 Unviewed complaints count: $_unreadComplaintsCount'); // ✅ CHANGED
+    }
+  } catch (e) {
+    print('❌ Error fetching complaint count: $e');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -671,26 +702,125 @@ class _StudentDashboardState extends State<StudentDashboard> with WidgetsBinding
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _AnimatedCard(
-                show: _showCards,
-                delay: 500,
-                fromLeft: false,
-                child: _dashboardCard(
-                  context,
-                  icon: Icons.notifications_active_outlined,
-                  title: "Alerts",
-                  subtitle: "Campus notifications",
-                  gradient: const [Color(0xFF667EEA), Color(0xFF764BA2)],
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Alerts - Feature coming soon")),
-                    );
-                  },
+  child: _AnimatedCard(
+    show: _showCards,
+    delay: 500,
+    fromLeft: false,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: _dashboardCard(
+            context,
+            icon: Icons.notifications_active_outlined,
+            title: "Alerts",
+            subtitle: "Campus notifications",
+            gradient: const [Color(0xFF667EEA), Color(0xFF764BA2)],
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationPage()),
+              );
+              _fetchUnreadCount();
+            },
+          ),
+        ),
+        if (_unreadCount > 0)
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 20,
+                minHeight: 20,
+              ),
+              child: Center(
+                child: Text(
+                  _unreadCount > 9 ? '9+' : '$_unreadCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
+          ),
+      ],
+    ),
+  ),
+),
           ],
         ),
+
+        const SizedBox(height: 16),
+Row(
+  children: [
+    Expanded(
+      child: _AnimatedCard(
+        show: _showCards,
+        delay: 600, // Changed from 400 to sequence after Alerts
+        fromLeft: true,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: _dashboardCard(
+                context,
+                icon: Icons.report_problem_outlined,
+                title: "Complaints",
+                subtitle: "Report campus issues",
+                gradient: const [Color(0xFFFF512F), Color(0xFFDD2476)],
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ComplaintScreen()),
+                  );
+                  _fetchUnreadComplaintsCount(); // Refresh count when returning
+                },
+              ),
+            ),
+            if (_unreadComplaintsCount > 0)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 20,
+                    minHeight: 20,
+                  ),
+                  child: Center(
+                    child: Text(
+                      _unreadComplaintsCount > 9 ? '9+' : '$_unreadComplaintsCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+    const SizedBox(width: 16),
+    Expanded(child: Container()), // Empty space to match Alerts row layout
+  ],
+),
       ],
     );
   }

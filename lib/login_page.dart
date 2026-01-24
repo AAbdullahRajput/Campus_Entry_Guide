@@ -6,7 +6,7 @@ import 'admin_dashboard.dart';
 import 'register_page.dart';
 import 'forget_password_page.dart';
 import 'api_service.dart';
-import 'local_storage.dart';
+import '../services/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -75,10 +75,13 @@ class _LoginScreenState extends State<LoginScreen>
 
   Future<void> _saveCredentials() async {
     if (rememberMe) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('saved_email', emailController.text);
-      await prefs.setString('saved_password', passwordController.text);
-      await prefs.setString('saved_role', selectedRole);
+      await LocalStorage.saveCredentials(
+        emailController.text,
+        passwordController.text,
+        selectedRole,
+      );
+    } else {
+      await LocalStorage.clearSavedCredentials();
     }
   }
 
@@ -387,16 +390,28 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ✅ UPDATED LOGIN METHOD - Saves all user data
   Future<void> _login() async {
+    print("🔍 Login button pressed");
+    print("📧 Email: ${emailController.text.trim()}");
+    print("🔐 Password length: ${passwordController.text.length}");
+    print("👤 Selected Role: $selectedRole");
+    
     if (_formKey.currentState!.validate()) {
+      print("✅ Form validated successfully");
       setState(() => isLoading = true);
 
       try {
+        print("📡 Calling ApiService.login...");
+        
         final res = await ApiService.login(
           emailController.text.trim(),
           passwordController.text,
           selectedRole,
         );
+
+        print("📥 API Response received");
+        print("📊 Full response: $res");
 
         if (!mounted) return;
         setState(() => isLoading = false);
@@ -404,31 +419,68 @@ class _LoginScreenState extends State<LoginScreen>
         final statusCode = res['statusCode'];
         final body = res['body'];
 
+        print("📊 Status Code: $statusCode");
+        print("📊 Response Body: $body");
+
         if (statusCode == 200) {
+          print("✅ Login successful! Saving credentials...");
           await _saveCredentials();
+          
           final userRole = body['user']['role'];
           final userData = body['user'];
           
-          // ✅ SAVE USER SESSION
+          print("💾 Saving complete user session...");
+          print("   User ID: ${userData['id']}");
+          print("   Email: ${userData['email']}");
+          print("   Role: $userRole");
+          print("   Full Name: ${userData['full_name']}");
+          print("   Phone: ${userData['phone_number']}");
+          
+          // ✅ STUDENT FIELDS
+          print("   Degree: ${userData['degree']}");
+          print("   Section: ${userData['section']}");
+          print("   ARID No: ${userData['arid_no']}");
+          print("   Semester: ${userData['semester_no']}");
+          
+          // ✅ TEACHER FIELDS
+          print("   Department: ${userData['department']}");
+          print("   Subject: ${userData['subject_name']}");
+          print("   Shift: ${userData['shift']}");
+          
+          // ✅ SAVE COMPLETE SESSION WITH ALL ROLE-SPECIFIC FIELDS
           await LocalStorage.saveUserSession(
             userId: userData['id'],
             email: userData['email'],
             role: userRole,
             fullName: userData['full_name'],
+            phoneNumber: userData['phone_number'],
+            // Student fields
+            degree: userData['degree'],
+            section: userData['section'],
+            aridNo: userData['arid_no'],
+            semesterNo: userData['semester_no'],
+            // Teacher fields
+            department: userData['department'],
+            subjectName: userData['subject_name'],
+            shift: userData['shift'],
           );
           
-          print("✅ Login Success - User Data: $userData");
-          print("✅ Session saved successfully");
-          
+          print("✅ Complete session saved! Navigating to dashboard...");
           _navigateToRole(userRole, userData);
         } else {
+          print("❌ Login failed with status: $statusCode");
+          print("❌ Error message: ${body['message']}");
           _showErrorDialog(
             context,
             "Login Failed",
             body['message'] ?? "Invalid email or password",
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        print("❌ Exception occurred during login:");
+        print("❌ Error: $e");
+        print("❌ Stack trace: $stackTrace");
+        
         if (!mounted) return;
         setState(() => isLoading = false);
         _showErrorDialog(
@@ -437,6 +489,8 @@ class _LoginScreenState extends State<LoginScreen>
           "An error occurred: ${e.toString()}",
         );
       }
+    } else {
+      print("❌ Form validation failed");
     }
   }
 

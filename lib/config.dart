@@ -28,4 +28,15 @@ class ApiConfig {
   static const String deleteTeacher = '$baseUrl/delete-teacher';
   static const String addFilterOption = '$baseUrl/add-filter-option';
   static const String deleteFilterOption = '$baseUrl/delete-filter-option';
+
+
+  // 🆕 Lost & Found Endpoints
+static const String getLostFoundOptions = '$baseUrl/get-lost-found-options';
+static const String reportLostFoundItem = '$baseUrl/report-lost-found-item';
+static const String getLostFoundItems = '$baseUrl/get-lost-found-items';
+static const String claimItem = '$baseUrl/claim-item';
+static const String verifyItem = '$baseUrl/verify-item';
+static const String updateLostFoundItem = '$baseUrl/update-lost-found-item';
+static const String deleteLostFoundItem = '$baseUrl/delete-lost-found-item';
+static const String getAdminLostFoundReports = '$baseUrl/get-admin-lost-found-reports';
 }

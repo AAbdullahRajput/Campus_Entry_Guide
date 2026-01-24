@@ -1,15 +1,17 @@
 import 'package:campus_entry_guide/announcements_page.dart';
+import 'package:campus_entry_guide/complaint_handling_page.dart';
 import 'package:campus_entry_guide/data_monitoring_page.dart';
 import 'package:campus_entry_guide/map_screen.dart';
 import 'package:campus_entry_guide/notification_page.dart';
 import 'package:campus_entry_guide/reports_handling_page.dart';
 import 'package:campus_entry_guide/user_management_page.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'profile_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'local_storage.dart';
+import '../services/local_storage.dart';
 
 // ================== LOCATION PIN PAINTER ==================
 class LocationPinPainter extends CustomPainter {
@@ -74,13 +76,11 @@ class _AdminShellState extends State<AdminShell> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _showBottomBar = false;
   
-  // ✅ ADD THIS - Key to access dashboard state
   final GlobalKey<_AdminDashboardState> _dashboardKey = GlobalKey<_AdminDashboardState>();
 
   @override
   void initState() {
     super.initState();
-    // Animate bottom bar after a delay
     Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
         setState(() => _showBottomBar = true);
@@ -88,14 +88,12 @@ class _AdminShellState extends State<AdminShell> {
     });
   }
 
-  // ✅ ADD THIS METHOD - Refresh notification count
   void _refreshNotificationCount() {
     _dashboardKey.currentState?._fetchUnreadCount();
   }
 
   void _onNavTap(int index) {
     if (index == 1) {
-      // Navigate to Map Page with animation
       Navigator.push(
         context,
         PageRouteBuilder(
@@ -111,7 +109,6 @@ class _AdminShellState extends State<AdminShell> {
         ),
       );
     } else if (index == 2) {
-      // Navigate to Profile Page with animation
       Navigator.push(
         context,
         PageRouteBuilder(
@@ -143,7 +140,7 @@ class _AdminShellState extends State<AdminShell> {
         index: _currentIndex,
         children: [
           AdminDashboard(
-            key: _dashboardKey, // ✅ ADD THIS - Pass the key
+            key: _dashboardKey,
             userName: userName,
             userEmail: userEmail,
             userImage: userImage,
@@ -361,32 +358,37 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
   bool _showWelcome = false;
   bool _showCards = false;
   int _unreadCount = 0;
-  Timer? _refreshTimer; 
+  int _unreadComplaintsCount = 0;
+  int _lastViewedComplaintsCount = 0;
+  Timer? _refreshTimer;
+  Timer? _complaintsRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _startAnimations();
     _fetchUnreadCount();
-    WidgetsBinding.instance.addObserver(this); 
-    // ✅ Auto-refresh every 10 seconds
+    _fetchUnreadComplaintsCount();
+    WidgetsBinding.instance.addObserver(this);
+    
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _fetchUnreadCount();
+    });
+    
+    _complaintsRefreshTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
+      _fetchUnreadComplaintsCount();
     });
   }
 
   void _startAnimations() {
-    // AppBar animation
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) setState(() => _showAppBar = true);
     });
     
-    // Welcome text animation
     Future.delayed(const Duration(milliseconds: 250), () {
       if (mounted) setState(() => _showWelcome = true);
     });
     
-    // Cards animation
     Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) setState(() => _showCards = true);
     });
@@ -394,13 +396,14 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
 
   void _onAnnouncementPosted() {
     print('📢 Announcement posted! Refreshing count...');
-    _fetchUnreadCount(); // Immediately fetch updated count
+    _fetchUnreadCount();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _fetchUnreadCount();  // ✅ Refresh when app comes to foreground
+      _fetchUnreadCount();
+      _fetchUnreadComplaintsCount();
     }
   }
   
@@ -429,9 +432,58 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
     }
   }
 
+  Future<void> _fetchUnreadComplaintsCount() async {
+  try {
+    final session = await LocalStorage.getUserSession();
+    if (session == null) return;
+    
+    final response = await http.post(
+      Uri.parse('http://192.168.100.63:3000/get-admin-complaints'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'reporterRole': null,
+        'status': null,
+        'category': null,
+        'priority': null,
+        'location': null,
+        'searchQuery': null,
+      }),
+    ).timeout(const Duration(seconds: 5));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final complaints = List<Map<String, dynamic>>.from(data['complaints']);
+      
+      final pendingCount = complaints.where((c) => 
+        c['status'] == 'pending' || c['status'] == 'in_progress'
+      ).length;
+      
+      // Load the last viewed count from SharedPreferences
+      final prefs = await SharedPreferences.getInstance(); // ✅ Changed this line
+      _lastViewedComplaintsCount = prefs.getInt('last_viewed_complaints_count') ?? 0;
+      
+      // Only show badge if there are NEW complaints (count increased)
+      setState(() {
+        if (pendingCount > _lastViewedComplaintsCount) {
+          _unreadComplaintsCount = pendingCount - _lastViewedComplaintsCount;
+        } else {
+          _unreadComplaintsCount = 0;
+        }
+      });
+      
+      print('📊 Admin unread complaints count: $_unreadComplaintsCount');
+      print('📊 Current pending: $pendingCount, Last viewed: $_lastViewedComplaintsCount');
+    }
+  } catch (e) {
+    print('❌ Error fetching complaints count: $e');
+  }
+}
+
+
   @override
   void dispose() {
-    _refreshTimer?.cancel();  // ✅ Stop timer when leaving page
+    _refreshTimer?.cancel();
+    _complaintsRefreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -481,7 +533,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                             },
                           ),
                         );
-                        _fetchUnreadCount();  // Refresh count when returning
+                        _fetchUnreadCount();
                       },
                     ),
                     if (_unreadCount > 0)
@@ -665,7 +717,6 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                   subtitle: "Post campus notices",
                   gradient: const [Color(0xFFFFB347), Color(0xFFFFCC33)],
                   onTap: () async {
-                    // ✅ UPDATED - Use await to wait for return
                     await Navigator.of(context).push(
                       PageRouteBuilder(
                         transitionDuration: const Duration(milliseconds: 350),
@@ -692,7 +743,6 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                         },
                       ),
                     );
-                    // ✅ UPDATED - Refresh count when returning from announcements
                     _fetchUnreadCount();
                   },
                 ),
@@ -738,6 +788,129 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                 ),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _AnimatedCard(
+                show: _showCards,
+                delay: 400,
+                fromLeft: true,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: _dashboardCard(
+                        context,
+                        icon: Icons.manage_accounts_rounded,
+                        title: "Complaint Management",
+                        subtitle: "Student & Teacher Issues",
+                        gradient: const [Color(0xFF8360c3), Color(0xFF2ebf91)],
+                        onTap: () async {
+  // Calculate current pending count before navigation
+  final session = await LocalStorage.getUserSession();
+  if (session != null) {
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.100.63:3000/get-admin-complaints'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'reporterRole': null,
+          'status': null,
+          'category': null,
+          'priority': null,
+          'location': null,
+          'searchQuery': null,
+        }),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final complaints = List<Map<String, dynamic>>.from(data['complaints']);
+        
+        final pendingCount = complaints.where((c) => 
+          c['status'] == 'pending' || c['status'] == 'in_progress'
+        ).length;
+        
+        // Save this as the "last viewed" count
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('last_viewed_complaints_count', pendingCount);
+        
+        print('✅ Saved last viewed count: $pendingCount');
+        
+        // Clear the badge immediately
+        setState(() {
+          _unreadComplaintsCount = 0;
+          _lastViewedComplaintsCount = pendingCount;
+        });
+      }
+    } catch (e) {
+      print('❌ Error saving viewed count: $e');
+    }
+  }
+  
+  await Navigator.of(context).push(
+    PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (_, __, ___) => const AdminComplaintHandlingPage(),
+      transitionsBuilder: (_, animation, __, child) {
+        final slide = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+        return SlideTransition(
+          position: slide,
+          child: child,
+        );
+      },
+    ),
+  );
+  
+  // Refresh after returning from the page
+  _fetchUnreadComplaintsCount();
+},
+                      ),
+                    ),
+                    if (_unreadComplaintsCount > 0)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Center(
+                            child: Text(
+                              _unreadComplaintsCount > 9 ? '9+' : '$_unreadComplaintsCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Container()),
           ],
         ),
       ],

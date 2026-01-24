@@ -1,10 +1,14 @@
+import 'package:campus_entry_guide/complaint_page.dart';
 import 'package:campus_entry_guide/map_screen.dart';
 import 'package:campus_entry_guide/notification_page.dart';
 import 'package:flutter/material.dart';
+import 'chatbot_screen.dart';
+import 'lost_found_screen.dart';
+import 'attendance_page.dart';
 import 'profile_page.dart';
-import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'local_storage.dart';
 
 // ================== LOCATION PIN PAINTER ==================
@@ -70,13 +74,12 @@ class _TeacherShellState extends State<TeacherShell> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _showBottomBar = false;
 
-  // ✅ ADD THIS - Key to access dashboard state
+  // ✅ Key to access dashboard state
   final GlobalKey<_TeacherDashboardState> _dashboardKey = GlobalKey<_TeacherDashboardState>();
 
   @override
   void initState() {
     super.initState();
-    // Animate bottom bar after a delay
     Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
         setState(() => _showBottomBar = true);
@@ -84,14 +87,13 @@ class _TeacherShellState extends State<TeacherShell> {
     });
   }
 
-  // ✅ ADD THIS METHOD - Refresh notification count
+  // ✅ Refresh notification count
   void _refreshNotificationCount() {
     _dashboardKey.currentState?._fetchUnreadCount();
   }
 
   void _onNavTap(int index) {
     if (index == 1) {
-      // Navigate to Map Page with animation
       Navigator.push(
         context,
         PageRouteBuilder(
@@ -107,7 +109,6 @@ class _TeacherShellState extends State<TeacherShell> {
         ),
       );
     } else if (index == 2) {
-      // Navigate to Profile Page with animation
       Navigator.push(
         context,
         PageRouteBuilder(
@@ -139,7 +140,7 @@ class _TeacherShellState extends State<TeacherShell> {
         index: _currentIndex,
         children: [
           TeacherDashboard(
-            key: _dashboardKey, // ✅ ADD THIS - Pass the key
+            key: _dashboardKey,
             userName: userName,
             userEmail: userEmail,
             userImage: userImage,
@@ -354,6 +355,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
   bool _showWelcome = false;
   bool _showCards = false;
   int _unreadCount = 0;
+  int _unreadComplaintsCount = 0;
   Timer? _refreshTimer;
 
   @override
@@ -361,35 +363,34 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
     super.initState();
     _startAnimations();
     _fetchUnreadCount();
+    _fetchUnreadComplaintsCount();
     WidgetsBinding.instance.addObserver(this);
-    // ✅ Auto-refresh every 10 seconds
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _fetchUnreadCount();
-    });
-  }
-
-  void _startAnimations() {
-    // AppBar animation
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) setState(() => _showAppBar = true);
-    });
-    
-    // Welcome text animation
-    Future.delayed(const Duration(milliseconds: 250), () {
-      if (mounted) setState(() => _showWelcome = true);
-    });
-    
-    // Cards animation
-    Future.delayed(const Duration(milliseconds: 400), () {
-      if (mounted) setState(() => _showCards = true);
+      _fetchUnreadComplaintsCount();
     });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _fetchUnreadCount();  // ✅ Refresh when app comes to foreground
+      _fetchUnreadCount();
+      _fetchUnreadComplaintsCount();
     }
+  }
+
+  void _startAnimations() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) setState(() => _showAppBar = true);
+    });
+    
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) setState(() => _showWelcome = true);
+    });
+    
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) setState(() => _showCards = true);
+    });
   }
 
   Future<void> _fetchUnreadCount() async {
@@ -417,9 +418,35 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
     }
   }
 
+  Future<void> _fetchUnreadComplaintsCount() async {
+    try {
+      final session = await LocalStorage.getUserSession();
+      if (session == null) return;
+      
+      final response = await http.post(
+        Uri.parse('http://192.168.100.63:3000/get-unviewed-complaints-count'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'userId': session['userId'],
+          'userRole': session['role'],
+        }),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _unreadComplaintsCount = data['unviewedCount'] ?? 0;
+        });
+        print('📊 Unviewed complaints count: $_unreadComplaintsCount');
+      }
+    } catch (e) {
+      print('❌ Error fetching complaint count: $e');
+    }
+  }
+
   @override
   void dispose() {
-    _refreshTimer?.cancel();  // ✅ Stop timer when leaving page
+    _refreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -469,7 +496,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
                             },
                           ),
                         );
-                        _fetchUnreadCount();  // Refresh count when returning
+                        _fetchUnreadCount();
                       },
                     ),
                     if (_unreadCount > 0)
@@ -561,10 +588,17 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
                 fromLeft: true,
                 child: _dashboardCard(
                   context,
-                  icon: Icons.camera_alt_rounded,
-                  title: "Mark Attendance",
-                  subtitle: "AI Face Recognition",
+                  icon: Icons.check_circle_outline_rounded,
+                  title: "Attendance",
+                  subtitle: "View your records",
                   gradient: const [Color(0xFF43CEA2), Color(0xFF185A9D)],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => AttendanceHomePage(role: 'teacher')),
+                    );
+                  },
                 ),
               ),
             ),
@@ -576,10 +610,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
                 fromLeft: false,
                 child: _dashboardCard(
                   context,
-                  icon: Icons.check_circle_outline_rounded,
-                  title: "View Attendance",
-                  subtitle: "Class-wise records",
-                  gradient: const [Color(0xFF667EEA), Color(0xFF764BA2)],
+                  icon: Icons.schedule_rounded,
+                  title: "Timetable",
+                  subtitle: "View class schedule",
+                  gradient: const [Color(0xFFFFB347), Color(0xFFFFCC33)],
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Timetable - Feature coming soon")),
+                    );
+                  },
                 ),
               ),
             ),
@@ -595,10 +634,16 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
                 fromLeft: true,
                 child: _dashboardCard(
                   context,
-                  icon: Icons.schedule_rounded,
-                  title: "Timetable",
-                  subtitle: "View class schedule",
-                  gradient: const [Color(0xFFFFB347), Color(0xFFFFCC33)],
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: "Chatbot Help",
+                  subtitle: "Quick assistance",
+                  gradient: const [Color(0xFF36D1DC), Color(0xFF5B86E5)],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ChatbotScreen()),
+                    );
+                  },
                 ),
               ),
             ),
@@ -610,13 +655,162 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
                 fromLeft: false,
                 child: _dashboardCard(
                   context,
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: "Chatbot Help",
-                  subtitle: "Quick assistance",
-                  gradient: const [Color(0xFF36D1DC), Color(0xFF5B86E5)],
+                  icon: Icons.map_outlined,
+                  title: "Campus Map",
+                  subtitle: "Navigate campus",
+                  gradient: const [Color(0xFF8360c3), Color(0xFF2ebf91)],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MapPage()),
+                    );
+                  },
                 ),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _AnimatedCard(
+                show: _showCards,
+                delay: 400,
+                fromLeft: true,
+                child: _dashboardCard(
+                  context,
+                  icon: Icons.report_problem_outlined,
+                  title: "Lost & Found",
+                  subtitle: "Report items",
+                  gradient: const [Color(0xFFf7971e), Color(0xFFffd200)],
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LostFoundScreen()),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _AnimatedCard(
+                show: _showCards,
+                delay: 500,
+                fromLeft: false,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: _dashboardCard(
+                        context,
+                        icon: Icons.notifications_active_outlined,
+                        title: "Alerts",
+                        subtitle: "Campus notifications",
+                        gradient: const [Color(0xFF667EEA), Color(0xFF764BA2)],
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const NotificationPage()),
+                          );
+                          _fetchUnreadCount();
+                        },
+                      ),
+                    ),
+                    if (_unreadCount > 0)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Center(
+                            child: Text(
+                              _unreadCount > 9 ? '9+' : '$_unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _AnimatedCard(
+                show: _showCards,
+                delay: 600,
+                fromLeft: true,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: _dashboardCard(
+                        context,
+                        icon: Icons.report_problem_outlined,
+                        title: "Complaints",
+                        subtitle: "Report campus issues",
+                        gradient: const [Color(0xFFFF512F), Color(0xFFDD2476)],
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ComplaintScreen()),
+                          );
+                          _fetchUnreadComplaintsCount();
+                        },
+                      ),
+                    ),
+                    if (_unreadComplaintsCount > 0)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Center(
+                            child: Text(
+                              _unreadComplaintsCount > 9 ? '9+' : '$_unreadComplaintsCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(child: Container()), // Empty space
           ],
         ),
       ],
@@ -629,14 +823,11 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
     required String title,
     required String subtitle,
     required List<Color> gradient,
+    required VoidCallback onTap,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("$title - Feature coming soon")),
-        );
-      },
+      onTap: onTap,
       child: Container(
         height: 180,
         padding: const EdgeInsets.all(18),
