@@ -45,7 +45,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       adminId = prefs.getInt('userId');
-      adminName = prefs.getString('full_name');
+      adminName = prefs.getString('fullName');
     });
   }
 
@@ -190,7 +190,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.black),
             child: const Text('Delete'),
           ),
         ],
@@ -714,22 +714,23 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
                     onPressed: () => _updateComplaintStatus(complaint['id'], 'in_progress'),
                     icon: const Icon(Icons.build, size: 16),
                     label: const Text('Start Work'),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 180, 198, 211)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 180, 198, 211), foregroundColor: Colors.black),
                   ),
                 if (complaint['status'] == 'in_progress')
                   ElevatedButton.icon(
                     onPressed: () => _updateComplaintStatus(complaint['id'], 'resolved'),
                     icon: const Icon(Icons.check_circle, size: 16),
                     label: const Text('Mark Resolved'),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 154, 187, 155)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 154, 187, 155), foregroundColor: Colors.black),
                   ),
-                if ((complaint['verified_by_reporter'] == 1 || complaint['verified_by_reporter'] == true) &&
+                if (complaint['status'] == 'resolved' &&
+                    (complaint['verified_by_reporter'] == 1 || complaint['verified_by_reporter'] == true) &&
                     (complaint['allow_admin_delete'] == 1 || complaint['allow_admin_delete'] == true))
                   ElevatedButton.icon(
                     onPressed: () => _deleteComplaint(complaint['id']),
                     icon: const Icon(Icons.delete, size: 16),
                     label: const Text('Delete'),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 180, 154, 152)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 180, 154, 152), foregroundColor: Colors.black),
                   ),
               ],
             ),
@@ -781,7 +782,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
                           },
                           icon: const Icon(Icons.close, size: 16),
                           label: const Text('Cancel'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, foregroundColor: Colors.white),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -798,7 +799,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
                           },
                           icon: const Icon(Icons.send, size: 16),
                           label: const Text('Send'),
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8360c3)),
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8360c3), foregroundColor: Colors.white),
                         ),
                       ),
                     ],

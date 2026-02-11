@@ -1,15 +1,18 @@
 import 'package:campus_entry_guide/complaint_page.dart';
 import 'package:campus_entry_guide/map_screen.dart';
 import 'package:campus_entry_guide/notification_page.dart';
+import 'package:campus_entry_guide/student_attendance_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'chatbot_screen.dart';
 import 'lost_found_screen.dart';
-import 'attendance_page.dart';
+import 'teacher_attendance_page.dart';
 import 'profile_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'local_storage.dart';
+import 'class_scheduling.dart';
+import '../services/local_storage.dart';
 
 // ================== LOCATION PIN PAINTER ==================
 class LocationPinPainter extends CustomPainter {
@@ -599,61 +602,225 @@ Future<void> _fetchUnreadComplaintsCount() async {
                   title: "Attendance",
                   subtitle: "View your records",
                   gradient: const [Color(0xFF43CEA2), Color(0xFF185A9D)],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => AttendanceHomePage(role: 'student')),
-                    );
-                  },
+                  onTap: () async {
+  // Get session data to pass userId and userName
+  final session = await LocalStorage.getUserSession();
+  if (session == null) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Session expired. Please login again."),
+      ),
+    );
+    return;
+  }
+  
+  final userId = session['userId'] as int;
+  final userName = session['fullName'] as String? ?? widget.userName;
+  
+  if (!mounted) return;
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => StudentAttendancePage(
+        userId: userId,
+        userName: userName,
+      ),
+    ),
+  );
+},
                 ),
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(
-              child: _AnimatedCard(
-                show: _showCards,
-                delay: 100,
-                fromLeft: false,
-                child: _dashboardCard(
-                  context,
-                  icon: Icons.schedule_rounded,
-                  title: "Timetable",
-                  subtitle: "View class schedule",
-                  gradient: const [Color(0xFFFFB347), Color(0xFFFFCC33)],
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Timetable - Feature coming soon")),
-                    );
-                  },
-                ),
+// Replace the Timetable card section in student_dashboard.dart with this:
+
+Expanded(
+  child: _AnimatedCard(
+    show: _showCards,
+    delay: 100,
+    fromLeft: false,
+    child: _dashboardCard(
+      context,
+      icon: Icons.schedule_rounded,
+      title: "Timetable",
+      subtitle: "View class schedule",
+      gradient: const [Color(0xFFFFB347), Color(0xFFFFCC33)],
+      onTap: () async {
+        try {
+          print('🔍 [TIMETABLE] Starting navigation...');
+          
+          // Get session data using LocalStorage
+          final session = await LocalStorage.getUserSession();
+          
+          print('📊 Retrieved session: $session');
+          
+          if (session == null) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Session expired. Please login again."),
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+
+          // Extract all required fields
+          final userId = session['userId'] as int;
+          final degree = session['degree'] as String?;
+          final section = session['section'] as String?;
+          final semesterNo = session['semesterNo'] as String?;
+          final fullName = session['fullName'] as String? ?? 'Student';
+
+          print('✅ [TIMETABLE] Extracted values:');
+          print('   userId: $userId');
+          print('   degree: $degree');
+          print('   section: $section');
+          print('   semesterNo: $semesterNo');
+          print('   fullName: $fullName');
+
+          // Validate all required fields
+          if (degree == null || degree.isEmpty) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("❌ Degree information missing. Please update your profile."),
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+
+          if (section == null || section.isEmpty) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("❌ Section information missing. Please update your profile."),
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+
+          if (semesterNo == null || semesterNo.isEmpty) {
+            if (!mounted) return;
+            
+            // Debug: Show what's actually in the session
+            print('❌ [TIMETABLE] semesterNo is null or empty!');
+            print('   Session keys: ${session.keys.toList()}');
+            print('   Full session: $session');
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("❌ Semester information missing. Please update your profile."),
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+
+          // All validations passed - navigate
+          print('✅ [TIMETABLE] All validations passed. Navigating...');
+          
+          if (!mounted) return;
+          
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ClassSchedulingScreen(
+                userId: userId,
+                userRole: 'Student',
+                userName: fullName,
+                degree: degree,
+                section: section,
+                semesterNo: semesterNo,
               ),
             ),
+          ).then((_) {
+            // Refresh counts when returning from timetable
+            print('🔄 [TIMETABLE] Returned from timetable, refreshing...');
+            _fetchUnreadCount();
+            _fetchUnreadComplaintsCount();
+          });
+
+        } catch (e, stackTrace) {
+          print('❌ [TIMETABLE] Exception occurred:');
+          print('   Error: $e');
+          print('   Stack trace: $stackTrace');
+          
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("❌ Error: ${e.toString()}"),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+    ),
+  ),
+),
           ],
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
-              child: _AnimatedCard(
-                show: _showCards,
-                delay: 200,
-                fromLeft: true,
-                child: _dashboardCard(
-                  context,
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: "Chatbot Help",
-                  subtitle: "Quick assistance",
-                  gradient: const [Color(0xFF36D1DC), Color(0xFF5B86E5)],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-                    );
-                  },
-                ),
+  child: _AnimatedCard(
+    show: _showCards,
+    delay: 200,
+    fromLeft: true,
+    child: _dashboardCard(
+      context,
+      icon: Icons.chat_bubble_outline_rounded,
+      title: "Chatbot Help",
+      subtitle: "Quick assistance",
+      gradient: const [Color(0xFF36D1DC), Color(0xFF5B86E5)],
+      onTap: () async {
+        try {
+          // Get session data
+          final session = await LocalStorage.getUserSession();
+          
+          if (session == null) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Session expired. Please login again."),
+              ),
+            );
+            return;
+          }
+
+          final userId = session['userId'] as int;
+          final userRole = session['role'] as String;
+          final userName = session['fullName'] as String? ?? widget.userName;
+
+          if (!mounted) return;
+          
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ChatbotScreen(
+                userId: userId,
+                userRole: userRole,
+                userName: userName,
               ),
             ),
+          );
+        } catch (e) {
+          print('❌ Error opening chatbot: $e');
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Error opening chatbot: ${e.toString()}"),
+            ),
+          );
+        }
+      },
+    ),
+  ),
+),
             const SizedBox(width: 16),
             Expanded(
               child: _AnimatedCard(

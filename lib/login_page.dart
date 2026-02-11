@@ -5,7 +5,7 @@ import 'teacher_dashboard.dart';
 import 'admin_dashboard.dart';
 import 'register_page.dart';
 import 'forget_password_page.dart';
-import 'api_service.dart';
+import 'services/api_service.dart';
 import '../services/local_storage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -442,6 +442,7 @@ class _LoginScreenState extends State<LoginScreen>
           print("   ARID No: ${userData['arid_no']}");
           print("   Semester: ${userData['semester_no']}");
           
+          
           // ✅ TEACHER FIELDS
           print("   Department: ${userData['department']}");
           print("   Subject: ${userData['subject_name']}");
@@ -459,6 +460,8 @@ class _LoginScreenState extends State<LoginScreen>
             section: userData['section'],
             aridNo: userData['arid_no'],
             semesterNo: userData['semester_no'],
+            
+            
             // Teacher fields
             department: userData['department'],
             subjectName: userData['subject_name'],

@@ -72,12 +72,12 @@ Future<void> _loadUserData() async {
   final prefs = await SharedPreferences.getInstance();
   
   final loadedUserId = prefs.getInt('userId');
-  final loadedUserName = prefs.getString('full_name');
+  final loadedUserName = prefs.getString('fullName');
   final loadedUserRole = prefs.getString('role');
   final loadedUserDegree = prefs.getString('degree');
   final loadedUserSection = prefs.getString('section');
   final loadedUserEmail = prefs.getString('email');
-  final loadedUserPhone = prefs.getString('phone_number');
+  final loadedUserPhone = prefs.getString('phoneNumber');
   
   print('📋 Loaded user data:');
   print('   userId: $loadedUserId');
@@ -357,10 +357,10 @@ Future<void> _submitComplaint() async {
         title: const Text('Delete Complaint?'),
         content: const Text('This action cannot be undone.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), style: ElevatedButton.styleFrom(foregroundColor: Colors.black), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
             child: const Text('Delete'),
           ),
         ],
@@ -404,10 +404,17 @@ Future<void> _submitComplaint() async {
           'Is the issue actually resolved?\n\nAfter verification, admin can delete. You cannot delete after verification.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Not Yet')),
+          TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black, // text color
+          ),
+          child: const Text('Not Yet'),
+        ),
+
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
             child: const Text('Yes, Allow Delete'),
           ),
         ],
@@ -1248,21 +1255,21 @@ if (complaint['status'] == 'resolved' && complaint['resolved_at'] != null)
                     onPressed: () => _editComplaint(complaint),
                     icon: const Icon(Icons.edit, size: 16),
                     label: const Text('Edit'),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 207, 222, 235)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 207, 222, 235), foregroundColor: Colors.black),
                   ),
                 if (isOwn && canDelete)
                   ElevatedButton.icon(
                     onPressed: () => _deleteComplaint(complaint['id']),
                     icon: const Icon(Icons.delete, size: 16),
                     label: const Text('Delete'),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 221, 179, 176)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 221, 179, 176), foregroundColor: Colors.black),
                   ),
                 if (isOwn && isResolved && !isVerified)
                   ElevatedButton.icon(
                     onPressed: () => _verifyComplaint(complaint['id']),
                     icon: const Icon(Icons.check_circle, size: 16),
                     label: const Text('Verify'),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 145, 196, 146)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 145, 196, 146), foregroundColor: Colors.black),
                   ),
                 if (isVerified)
   Chip(

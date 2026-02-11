@@ -3,14 +3,20 @@ import 'package:campus_entry_guide/login_page.dart';
 import 'package:campus_entry_guide/student_dashboard.dart';
 import 'package:campus_entry_guide/teacher_dashboard.dart';
 import 'package:flutter/material.dart';
-import 'login_page.dart';
-import 'student_dashboard.dart';
-import 'teacher_dashboard.dart';
-import 'admin_dashboard.dart';
 import 'services/local_storage.dart';
-
-void main() {
+import 'services/reminder_service.dart';
+import '../services/notification_service.dart';
+ 
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Notification Service
+  await NotificationService().initialize();
+
+  // ✅ START REMINDER BACKGROUND SERVICE
+  print('🚀 Starting reminder background service from main.dart');
+  ReminderService.startReminderBackgroundService();
+
   runApp(const MyApp());
 }
 

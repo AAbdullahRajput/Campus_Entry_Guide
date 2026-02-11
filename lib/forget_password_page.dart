@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'otp_verify_page.dart';
-import 'api_service.dart';
+import 'services/api_service.dart';
 
 enum ResetMethod { email, phone }
 

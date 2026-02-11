@@ -672,31 +672,59 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
                   title: "Data Monitoring",
                   subtitle: "Track usage & updates",
                   gradient: const [Color(0xFF43CEA2), Color(0xFF185A9D)],
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        transitionDuration: const Duration(milliseconds: 350),
-                        pageBuilder: (_, __, ___) =>
-                            const DataMonitoringPage(),
-                        transitionsBuilder: (_, animation, __, child) {
-                          final slide = Tween<Offset>(
-                            begin: const Offset(1, 0),
-                            end: Offset.zero,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          );
+onTap: () async {
+  // Get user session data from SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getInt('userId')?.toString() ?? '';
+  final role = prefs.getString('role') ?? '';
+  
+  // ✅ FIXED: Use 'fullName' instead of 'userName'
+  final fullName = prefs.getString('fullName') ?? 'Admin';
+  
+  // Verify user is an admin
+  if (role != 'Admin') {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Access denied. Admin privileges required.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
+  
+  if (userId.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please login first')),
+    );
+    return;
+  }
+  
+  Navigator.of(context).push(
+    PageRouteBuilder(
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (_, __, ___) => AdminMonitoringPage(
+        adminId: userId,
+        adminName: fullName,  // ✅ Pass fullName here
+      ),
+      transitionsBuilder: (_, animation, __, child) {
+        final slide = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
-                          return SlideTransition(
-                            position: slide,
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
+        return SlideTransition(
+          position: slide,
+          child: child,
+        );
+      },
+    ),
+  );
+},
                 ),
               ),
             ),

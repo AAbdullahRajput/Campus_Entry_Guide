@@ -1,14 +1,94 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'config.dart';
+import 'teachers_list_page.dart';
+import 'students_hierarchy_page.dart';
 
-class DataMonitoringPage extends StatefulWidget {
-  const DataMonitoringPage({super.key});
+class AdminMonitoringPage extends StatefulWidget {
+  final String adminId;
+  final String adminName;
+
+  const AdminMonitoringPage({
+    super.key,
+    required this.adminId,
+    required this.adminName,
+  });
 
   @override
-  State<DataMonitoringPage> createState() => _DataMonitoringPageState();
+  State<AdminMonitoringPage> createState() => _AdminMonitoringPageState();
 }
 
-class _DataMonitoringPageState extends State<DataMonitoringPage> {
-  String selectedPeriod = "Today";
+class _AdminMonitoringPageState extends State<AdminMonitoringPage> {
+  bool isLoading = false;
+  Map<String, dynamic> dashboardStats = {};
+  List<dynamic> recentActivity = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadDashboardData() async {
+    setState(() => isLoading = true);
+
+    try {
+      await _loadDashboardStatistics();
+      await _loadRecentActivity();
+    } catch (e) {
+      print("Error loading data: $e");
+      _showErrorSnackbar("Failed to load data");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _loadDashboardStatistics() async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.adminDashboard),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'admin_id': widget.adminId}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          dashboardStats = data['statistics'] ?? {};
+        });
+      }
+    } catch (e) {
+      print("Error loading dashboard stats: $e");
+    }
+  }
+
+  Future<void> _loadRecentActivity() async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.adminRecentActivity),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'admin_id': widget.adminId, 'limit': 20}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          recentActivity = data['activities'] ?? [];
+        });
+      }
+    } catch (e) {
+      print("Error loading activity: $e");
+    }
+  }
+
+  void _showErrorSnackbar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +96,7 @@ class _DataMonitoringPageState extends State<DataMonitoringPage> {
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         title: const Text(
-          "Data Monitoring",
+          "Admin Monitoring",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -25,155 +105,203 @@ class _DataMonitoringPageState extends State<DataMonitoringPage> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF43CEA2), Color(0xFF185A9D)],
+              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadDashboardData,
+            tooltip: "Refresh",
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPeriodSelector(),
-            const SizedBox(height: 20),
-            _buildStatsGrid(),
-            const SizedBox(height: 20),
-            _buildRecentActivitySection(),
-          ],
-        ),
-      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadDashboardData,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Welcome Section
+                    _buildWelcomeSection(),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Main Statistics Cards
+                    const Text(
+                      "Overview",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStatisticsGrid(),
+                    
+                    const SizedBox(height: 30),
+                    
+                    // Quick Actions
+                    const Text(
+                      "Quick Actions",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildQuickActions(),
+                    
+                    const SizedBox(height: 30),
+                    
+                    // Recent Activity
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Recent Activity",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => _navigateToActivityLog(),
+                          child: const Text("View All"),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildRecentActivityList(),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _buildPeriodSelector() {
+  Widget _buildWelcomeSection() {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: const Color(0xFF667EEA).withOpacity(0.3),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
-          _buildPeriodButton("Today"),
-          _buildPeriodButton("Week"),
-          _buildPeriodButton("Month"),
-          _buildPeriodButton("Year"),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.admin_panel_settings,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Welcome, ${widget.adminName}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  "Manage your institution effectively",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPeriodButton(String period) {
-    final isSelected = selectedPeriod == period;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            selectedPeriod = period;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? const LinearGradient(
-                    colors: [Color(0xFF43CEA2), Color(0xFF185A9D)],
-                  )
-                : null,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            period,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey.shade600,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildStatisticsGrid() {
+    // Parse present_percentage safely
+    double presentPercentage = 0.0;
+    if (dashboardStats['present_percentage'] != null) {
+      if (dashboardStats['present_percentage'] is String) {
+        presentPercentage = double.tryParse(dashboardStats['present_percentage']) ?? 0.0;
+      } else {
+        presentPercentage = (dashboardStats['present_percentage'] as num).toDouble();
+      }
+    }
 
-  Widget _buildStatsGrid() {
-    return Column(
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 1.3,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.people,
-                title: "Total Users",
-                value: "1,234",
-                change: "+12%",
-                isPositive: true,
-                color: const Color(0xFF667EEA),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.login,
-                title: "Active Sessions",
-                value: "892",
-                change: "+8%",
-                isPositive: true,
-                color: const Color(0xFF43CEA2),
-              ),
-            ),
-          ],
+        _buildStatCard(
+          "Teachers",
+          "${dashboardStats['total_teachers'] ?? 0}",
+          Icons.people,
+          const Color(0xFF667EEA),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.map,
-                title: "Map Views",
-                value: "3,456",
-                change: "+25%",
-                isPositive: true,
-                color: const Color(0xFFFFB347),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                icon: Icons.report,
-                title: "New Reports",
-                value: "28",
-                change: "-5%",
-                isPositive: false,
-                color: const Color(0xFFFF512F),
-              ),
-            ),
-          ],
+        _buildStatCard(
+          "Students",
+          "${dashboardStats['total_students'] ?? 0}",
+          Icons.school,
+          const Color(0xFF43CEA2),
+        ),
+        _buildStatCard(
+          "Total Records",
+          "${dashboardStats['total_attendance_records'] ?? 0}",
+          Icons.assignment,
+          const Color(0xFFFA709A),
+        ),
+        _buildStatCard(
+          "Present Rate",
+          "${presentPercentage.toStringAsFixed(1)}%",
+          Icons.check_circle,
+          const Color(0xFFFEE140),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required String change,
-    required bool isPositive,
-    required Color color,
-  }) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14), // Reduced from 16
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -187,51 +315,45 @@ class _DataMonitoringPageState extends State<DataMonitoringPage> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min, // Added to prevent overflow
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 24),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isPositive 
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  change,
-                  style: TextStyle(
-                    color: isPositive ? Colors.green : Colors.red,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 6), // Reduced from 8
+          Flexible( // Wrapped in Flexible
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
+                const SizedBox(height: 2), // Reduced from 4
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -239,60 +361,106 @@ class _DataMonitoringPageState extends State<DataMonitoringPage> {
     );
   }
 
-  Widget _buildRecentActivitySection() {
+  Widget _buildQuickActions() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Recent Activity",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                "View Teachers",
+                Icons.people,
+                const Color(0xFF667EEA),
+                () => _navigateToTeachersList(),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildActionCard(
+                "View Students",
+                Icons.school,
+                const Color(0xFF43CEA2),
+                () => _navigateToStudentsHierarchy(),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        _buildActivityItem(
-          icon: Icons.person_add,
-          title: "New user registered",
-          subtitle: "John Doe joined as Student",
-          time: "5 mins ago",
-          color: const Color(0xFF667EEA),
-        ),
-        _buildActivityItem(
-          icon: Icons.map,
-          title: "Campus map updated",
-          subtitle: "New building location added",
-          time: "1 hour ago",
-          color: const Color(0xFF43CEA2),
-        ),
-        _buildActivityItem(
-          icon: Icons.report,
-          title: "New report submitted",
-          subtitle: "Lost item reported in Library",
-          time: "2 hours ago",
-          color: const Color(0xFFFF512F),
-        ),
-        _buildActivityItem(
-          icon: Icons.campaign,
-          title: "Announcement posted",
-          subtitle: "Campus maintenance scheduled",
-          time: "3 hours ago",
-          color: const Color(0xFFFFB347),
-        ),
+        const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _buildActivityItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String time,
-    required Color color,
-  }) {
+  Widget _buildActionCard(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityList() {
+    if (recentActivity.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(Icons.inbox, size: 48, color: Colors.grey.shade300),
+              const SizedBox(height: 12),
+              Text(
+                "No recent activity",
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -304,47 +472,270 @@ class _DataMonitoringPageState extends State<DataMonitoringPage> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: recentActivity.length > 5 ? 5 : recentActivity.length,
+        separatorBuilder: (context, index) => Divider(
+          height: 1,
+          color: Colors.grey.shade200,
+        ),
+        itemBuilder: (context, index) {
+          final activity = recentActivity[index];
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: CircleAvatar(
+              radius: 20,
+              backgroundColor: _getActivityColor(activity['activity_type']).withOpacity(0.1),
+              child: Icon(
+                _getActivityIcon(activity['activity_type']),
+                color: _getActivityColor(activity['activity_type']),
+                size: 18,
+              ),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
+            title: Text(
+              activity['actor'] ?? 'Unknown',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+            subtitle: Text(
+              activity['description'] ?? '',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: const TextStyle(fontSize: 12),
+            ),
+            trailing: Text(
+              _formatTimestamp(activity['timestamp'] ?? ''),
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Navigation Methods
+  void _navigateToTeachersList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TeachersListPage(
+          adminId: widget.adminId,
+          adminName: widget.adminName,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToStudentsHierarchy() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StudentsHierarchyPage(
+          adminId: widget.adminId,
+          adminName: widget.adminName,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToDepartmentStats() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DepartmentStatsPage(
+          adminId: widget.adminId,
+          adminName: widget.adminName,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToAnalytics() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AnalyticsPage(
+          adminId: widget.adminId,
+          adminName: widget.adminName,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToActivityLog() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ActivityLogPage(
+          adminId: widget.adminId,
+          adminName: widget.adminName,
+        ),
+      ),
+    );
+  }
+
+  // Helper Methods
+  IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'enrollment':
+        return Icons.person_add;
+      case 'attendance':
+        return Icons.check_circle;
+      default:
+        return Icons.circle;
+    }
+  }
+
+  Color _getActivityColor(String type) {
+    switch (type) {
+      case 'enrollment':
+        return const Color(0xFF43CEA2);
+      case 'attendance':
+        return const Color(0xFF667EEA);
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _formatTimestamp(String timestamp) {
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays == 0) {
+        if (difference.inHours == 0) {
+          if (difference.inMinutes == 0) {
+            return 'Just now';
+          }
+          return '${difference.inMinutes}m ago';
+        }
+        return '${difference.inHours}h ago';
+      } else if (difference.inDays == 1) {
+        return 'Yesterday';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays}d ago';
+      } else {
+        return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      }
+    } catch (e) {
+      return timestamp;
+    }
+  }
+}
+
+// Placeholder Pages
+class DepartmentStatsPage extends StatelessWidget {
+  final String adminId;
+  final String adminName;
+
+  const DepartmentStatsPage({
+    super.key,
+    required this.adminId,
+    required this.adminName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        title: const Text(
+          "Department Statistics",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFFA709A), Color(0xFFFEE140)],
             ),
           ),
-          Text(
-            time,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade500,
+        ),
+      ),
+      body: const Center(
+        child: Text("Department Statistics - Coming Soon"),
+      ),
+    );
+  }
+}
+
+class AnalyticsPage extends StatelessWidget {
+  final String adminId;
+  final String adminName;
+
+  const AnalyticsPage({
+    super.key,
+    required this.adminId,
+    required this.adminName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        title: const Text(
+          "Analytics",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFFEE140), Color(0xFFFA709A)],
             ),
           ),
-        ],
+        ),
+      ),
+      body: const Center(
+        child: Text("Analytics - Coming Soon"),
+      ),
+    );
+  }
+}
+
+class ActivityLogPage extends StatelessWidget {
+  final String adminId;
+  final String adminName;
+
+  const ActivityLogPage({
+    super.key,
+    required this.adminId,
+    required this.adminName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        title: const Text(
+          "Activity Log",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+            ),
+          ),
+        ),
+      ),
+      body: const Center(
+        child: Text("Activity Log - Coming Soon"),
       ),
     );
   }

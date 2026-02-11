@@ -1,6 +1,9 @@
 {
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "^1.13.3",
+    "form-data": "^4.0.5",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
     "twilio": "^5.11.2"
   }
 }
