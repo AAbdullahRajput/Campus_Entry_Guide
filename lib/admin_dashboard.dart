@@ -97,7 +97,7 @@ class _AdminShellState extends State<AdminShell> {
       Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const MapPage(),
+          pageBuilder: (context, animation, secondaryAnimation) => const EnhancedMapPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;

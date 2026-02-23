@@ -12368,6 +12368,418 @@ async function handleLibraryMembership(session) {
   return dbResponse ? dbResponse.response : 
     "📚 Library membership is automatic for all enrolled students. Visit the Central Library or contact staff for details.";
 }
+
+async function handleGreeting(session) {
+  const dbResponse = await getResponseFromDatabase('greeting', session);
+  return dbResponse ? dbResponse.response :
+    "👋 Hello! How can I assist you today?";
+}
+
+async function handleHowAreYou(session) {
+  const dbResponse = await getResponseFromDatabase('how_are_you', session);
+  return dbResponse ? dbResponse.response :
+    "😊 I am doing great! How can I help you?";
+}
+
+async function handleBotName(session) {
+  const dbResponse = await getResponseFromDatabase('bot_name', session);
+  return dbResponse ? dbResponse.response :
+    "🤖 I am your Campus Assistant.";
+}
+
+async function handleFriendRequest(session) {
+  const dbResponse = await getResponseFromDatabase('friend_request', session);
+  return dbResponse ? dbResponse.response :
+    "😊 I am always here for you!";
+}
+
+async function handleLoveExpression(session) {
+  const dbResponse = await getResponseFromDatabase('love_expression', session);
+  return dbResponse ? dbResponse.response :
+    "❤️ Thank you!";
+}
+
+async function handleAbusiveLanguage(session) {
+  const dbResponse = await getResponseFromDatabase('abusive_language', session);
+  return dbResponse ? dbResponse.response :
+    "⚠️ Please keep the conversation respectful.";
+}
+
+async function handleThanks(session) {
+  const dbResponse = await getResponseFromDatabase('thanks', session);
+  return dbResponse ? dbResponse.response :
+    "🙏 You're welcome!";
+}
+
+async function handleDefault(session) {
+  return "I did not understand that. Could you please rephrase?";
+}
+
+// ========================================
+// SADNESS INTENT HANDLERS
+// ========================================
+
+/**
+ * Handler for main 'feeling_sad' intent
+ */
+async function handleFeelingSad(session) {
+  const dbResponse = await getResponseFromDatabase('feeling_sad', session);
+  return dbResponse ? dbResponse.response :
+    "💙 I am really sorry that you are feeling this way. It is completely okay to feel sad sometimes — emotions are a natural part of being human. If something specific is bothering you, you can share it with me. Even small steps like taking a short walk, listening to calming music, or speaking with someone you trust can help lighten the weight a little. Remember, tough moments do not last forever, and you are stronger than you think.";
+}
+
+/**
+ * Handler for 'why_am_i_sad' intent
+ */
+async function handleWhyAmISad(session) {
+  const dbResponse = await getResponseFromDatabase('why_am_i_sad', session);
+  return dbResponse ? dbResponse.response :
+    "💭 Sadness can come from many sources — disappointment, loss, stress, loneliness, or sometimes it appears without a clear reason. It is your mind processing emotions and experiences. If the sadness feels overwhelming or lasts for weeks, it might help to talk to someone you trust or consider speaking with a counselor. Understanding your emotions is the first step toward healing.";
+}
+
+/**
+ * Handler for 'how_to_stop_sadness' intent
+ */
+async function handleHowToStopSadness(session) {
+  const dbResponse = await getResponseFromDatabase('how_to_stop_sadness', session);
+  return dbResponse ? dbResponse.response :
+    "🌈 Here are some gentle steps that might help: 1) Talk to someone you trust about how you feel. 2) Do something small that brings you comfort — listen to music, take a walk, or spend time in nature. 3) Practice self-compassion and remind yourself that it is okay to feel this way. 4) Engage in light physical activity or a hobby you enjoy. 5) If the sadness persists for more than two weeks, consider reaching out to a mental health professional. Small actions can lead to gradual healing.";
+}
+
+/**
+ * Handler for 'want_to_cry' intent
+ */
+async function handleWantToCry(session) {
+  const dbResponse = await getResponseFromDatabase('want_to_cry', session);
+  return dbResponse ? dbResponse.response :
+    "💧 Crying is a healthy and natural way to release emotions. It is okay to cry — it does not make you weak. In fact, research shows that crying can help reduce stress and provide emotional relief. Let yourself feel what you need to feel. If you have been crying frequently and feel overwhelmed, it might help to talk to a friend, family member, or counselor who can support you through this.";
+}
+
+/**
+ * Handler for 'am_i_depressed' intent
+ */
+async function handleAmIDepressed(session) {
+  const dbResponse = await getResponseFromDatabase('am_i_depressed', session);
+  return dbResponse ? dbResponse.response :
+    "🩺 Sadness is a normal emotion that usually fades with time, while depression is a medical condition that lasts for at least two weeks and affects daily functioning. Signs of depression include: persistent sadness, loss of interest in activities you once enjoyed, changes in sleep or appetite, fatigue, difficulty concentrating, and feelings of worthlessness. If you have experienced several of these symptoms for more than two weeks, I strongly encourage you to speak with a mental health professional. You deserve proper support and care.";
+}
+
+/**
+ * Handler for 'feeling_empty' intent - HIGH PRIORITY
+ */
+async function handleFeelingEmpty(session) {
+  const dbResponse = await getResponseFromDatabase('feeling_empty', session);
+  return dbResponse ? dbResponse.response :
+    "🤍 Feeling empty or numb can be very distressing. This can happen when emotions become overwhelming, and your mind tries to protect you by shutting down feelings temporarily. It can also be a sign of depression or emotional exhaustion. Please consider talking to a mental health professional who can help you process these feelings safely. You do not have to go through this alone — support is available.";
+}
+
+/**
+ * Handler for 'sad_no_reason' intent
+ */
+async function handleSadNoReason(session) {
+  const dbResponse = await getResponseFromDatabase('sad_no_reason', session);
+  return dbResponse ? dbResponse.response :
+    "🌙 Sometimes sadness appears without an obvious trigger. This can be due to chemical imbalances in the brain, accumulated stress, fatigue, or subtle emotional processing happening beneath the surface. It is completely valid to feel sad even when everything seems fine on the outside. If this feeling persists or worsens, consider talking to a counselor or doctor. Your feelings are real and deserve attention.";
+}
+
+/**
+ * Handler for 'feeling_worthless' intent - CRITICAL PRIORITY
+ * This requires special attention as it may indicate crisis
+ */
+async function handleFeelingWorthless(session) {
+  const dbResponse = await getResponseFromDatabase('feeling_worthless', session);
+  
+  // Log this interaction for safety monitoring
+  await logHighPriorityInteraction(session, 'feeling_worthless');
+  
+  return dbResponse ? dbResponse.response :
+    "❤️‍🩹 I am truly sorry you are feeling this way. These thoughts are symptoms of deep emotional pain, not the truth about who you are. You matter, and your life has value — even when it does not feel that way right now. Please reach out to someone who can support you: a trusted friend, family member, counselor, or crisis helpline. If you are in immediate danger or having thoughts of self-harm, please contact emergency services or a crisis hotline immediately. You deserve help and compassion.";
+}
+
+/**
+ * Helper function to log high-priority emotional interactions
+ * This can be used for safety monitoring and follow-up
+ */
+async function logHighPriorityInteraction(session, intentName) {
+  try {
+    // Log to database for monitoring
+    await database.query(`
+      INSERT INTO high_priority_interactions 
+      (session_id, user_id, intent_name, timestamp) 
+      VALUES (?, ?, ?, NOW())
+    `, [session.id, session.user_id, intentName]);
+    
+    // Optionally, trigger alert for human review
+    if (intentName === 'feeling_worthless') {
+      // await notifyMentalHealthTeam(session);
+    }
+  } catch (error) {
+    console.error('Error logging high-priority interaction:', error);
+  }
+}
+
+// ========================================
+// STRESS & ANXIETY INTENT HANDLERS
+// ========================================
+
+/**
+ * Handler for main 'stressed' intent
+ */
+async function handleStressed(session) {
+  const dbResponse = await getResponseFromDatabase('stressed', session);
+  return dbResponse ? dbResponse.response :
+    "🧘 It sounds like you are under a lot of pressure right now. Stress can feel overwhelming, especially during exams or deadlines. Try to pause for a moment — take a deep breath, organize your tasks into smaller steps, and focus on one thing at a time. You do not have to solve everything at once. Managing stress starts with slowing down and regaining control step by step. You are capable of handling this.";
+}
+
+/**
+ * Handler for 'how_to_reduce_stress' intent
+ */
+async function handleHowToReduceStress(session) {
+  const dbResponse = await getResponseFromDatabase('how_to_reduce_stress', session);
+  return dbResponse ? dbResponse.response :
+    "🌿 Here are effective ways to reduce stress: 1) **Deep breathing**: Try the 4-7-8 technique (breathe in for 4, hold for 7, exhale for 8). 2) **Break tasks down**: Focus on one small task at a time instead of the entire workload. 3) **Physical activity**: Even a 10-minute walk can release tension. 4) **Talk it out**: Share your worries with someone you trust. 5) **Time management**: Prioritize tasks and set realistic deadlines. 6) **Rest**: Give yourself permission to take breaks. Small steps make a big difference.";
+}
+
+/**
+ * Handler for 'overwhelmed_tasks' intent
+ */
+async function handleOverwhelmedTasks(session) {
+  const dbResponse = await getResponseFromDatabase('overwhelmed_tasks', session);
+  return dbResponse ? dbResponse.response :
+    "📋 Feeling overwhelmed by tasks is very common. Here is what can help: 1) **Write everything down**: Get it out of your head and onto paper or a digital list. 2) **Prioritize**: Identify the 2-3 most urgent/important tasks. 3) **Start small**: Complete one easy task to build momentum. 4) **Delegate or ask for help** if possible. 5) **Set boundaries**: It is okay to say no to new commitments. 6) **Break it down**: Divide large tasks into tiny, manageable steps. You do not have to do everything perfectly or all at once.";
+}
+
+/**
+ * Handler for 'stress_physical_symptoms' intent
+ */
+async function handleStressPhysicalSymptoms(session) {
+  const dbResponse = await getResponseFromDatabase('stress_physical_symptoms', session);
+  return dbResponse ? dbResponse.response :
+    "💆 Stress can definitely cause physical symptoms like headaches, stomach issues, muscle tension, and chest tightness. Your body is telling you that stress levels are high. Here is what might help: 1) Practice relaxation techniques (deep breathing, progressive muscle relaxation). 2) Stay hydrated and eat regular meals. 3) Get adequate sleep. 4) Gentle stretching or light exercise can release physical tension. If symptoms persist or worsen, please see a doctor to rule out other medical causes. Your physical health matters.";
+}
+
+/**
+ * Handler for main 'nervous' intent
+ */
+async function handleNervous(session) {
+  const dbResponse = await getResponseFromDatabase('nervous', session);
+  return dbResponse ? dbResponse.response :
+    "💭 Feeling nervous usually means you care about the outcome — and that is a good thing. Try to prepare calmly and remind yourself of the effort you have already made. Take slow breaths and focus on what you can control. Nervousness is temporary, but your preparation and dedication will stay with you. You have got this!";
+}
+
+/**
+ * Handler for 'how_to_calm_anxiety' intent
+ */
+async function handleHowToCalmAnxiety(session) {
+  const dbResponse = await getResponseFromDatabase('how_to_calm_anxiety', session);
+  return dbResponse ? dbResponse.response :
+    "🌊 Here are immediate anxiety relief techniques: 1) **Grounding (5-4-3-2-1)**: Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste. 2) **Box breathing**: Breathe in for 4, hold for 4, out for 4, hold for 4. Repeat. 3) **Move your body**: Walk, stretch, or do jumping jacks to release nervous energy. 4) **Challenge anxious thoughts**: Ask yourself, 'Is this thought based on facts or feelings?' 5) **Stay present**: Focus on this moment, not 'what ifs.' You can get through this moment.";
+}
+
+/**
+ * Handler for 'panic_attack' intent - CRITICAL PRIORITY
+ */
+async function handlePanicAttack(session) {
+  const dbResponse = await getResponseFromDatabase('panic_attack', session);
+  
+  // Log this as high priority
+  await logHighPriorityInteraction(session, 'panic_attack');
+  
+  return dbResponse ? dbResponse.response :
+    "🆘 If you are having a panic attack, please know: **You are safe. This will pass. You are not in danger.** Try these steps right now: 1) **Breathe slowly**: Inhale through your nose for 4 counts, exhale through your mouth for 6 counts. 2) **Ground yourself**: Touch something cold, splash water on your face, or hold ice. 3) **Remind yourself**: 'This is temporary. I have survived this before.' If symptoms continue or you feel you cannot breathe properly, please seek immediate medical attention or call emergency services. If panic attacks are frequent, please speak with a mental health professional.";
+}
+
+/**
+ * Handler for 'worried_about_future' intent
+ */
+async function handleWorriedAboutFuture(session) {
+  const dbResponse = await getResponseFromDatabase('worried_about_future', session);
+  return dbResponse ? dbResponse.response :
+    "🔄 Overthinking and worrying about the future is exhausting. Here is what might help: 1) **Stay present**: You can only control what is happening now. Ask yourself, 'What can I do in this moment?' 2) **Write it down**: Getting worries out of your head and onto paper can reduce their power. 3) **Set a 'worry time'**: Give yourself 15 minutes to worry, then move on. 4) **Challenge 'what if' thoughts**: Replace them with 'even if' — 'Even if X happens, I can handle it.' You are stronger than your worries.";
+}
+
+/**
+ * Handler for 'exam_anxiety' intent
+ */
+async function handleExamAnxiety(session) {
+  const dbResponse = await getResponseFromDatabase('exam_anxiety', session);
+  return dbResponse ? dbResponse.response :
+    "📚 Exam anxiety is very common. Here is how to manage it: 1) **Prepare well in advance**: Break study material into small chunks and review daily. 2) **Practice relaxation**: Before the exam, take deep breaths and visualize yourself succeeding. 3) **Positive self-talk**: Replace 'I will fail' with 'I have prepared as well as I can.' 4) **Physical care**: Get good sleep the night before, eat a healthy meal, and stay hydrated. 5) **During the exam**: If you feel anxious, pause, take 3 deep breaths, and refocus. Remember, one exam does not define your worth or your future.";
+}
+
+// ========================================
+// TIRED & BURNOUT INTENT HANDLERS
+// ========================================
+
+async function handleTired(session) {
+  const dbResponse = await getResponseFromDatabase('tired', session);
+  return dbResponse ? dbResponse.response :
+    "😴 It sounds like you may need some rest. Being tired is often your body and mind asking for a pause. If possible, take a short break, drink some water, stretch a little, or rest your eyes. Even a small recharge can make a big difference. Remember, productivity is important — but your health and well-being come first.";
+}
+
+async function handleAlwaysTired(session) {
+  const dbResponse = await getResponseFromDatabase('always_tired', session);
+  return dbResponse ? dbResponse.response :
+    "🩺 Feeling constantly tired despite adequate sleep can be caused by many factors: poor sleep quality, stress, depression, anemia, thyroid issues, nutritional deficiencies, or other medical conditions. I recommend: 1) Track your sleep patterns and quality. 2) Evaluate your diet and hydration. 3) Assess your stress levels and emotional health. 4) **See a doctor** for a checkup — chronic fatigue should be evaluated medically. You deserve to feel energized and well.";
+}
+
+async function handleHowToGetEnergy(session) {
+  const dbResponse = await getResponseFromDatabase('how_to_get_energy', session);
+  return dbResponse ? dbResponse.response :
+    "⚡ Here are natural ways to boost energy: 1) **Hydrate**: Dehydration causes fatigue. Drink a glass of water. 2) **Move**: Even 5-10 minutes of stretching or walking increases blood flow. 3) **Healthy snacks**: Eat protein and complex carbs (nuts, fruit, whole grains). 4) **Power nap**: 15-20 minutes can refresh you without grogginess. 5) **Sunlight**: Natural light helps regulate energy levels. 6) **Deep breaths**: Oxygen boosts alertness. If fatigue persists, prioritize better sleep and consult a doctor.";
+}
+
+async function handleBurnout(session) {
+  const dbResponse = await getResponseFromDatabase('burnout', session);
+  return dbResponse ? dbResponse.response :
+    "🔥 Burnout is serious — it is physical, emotional, and mental exhaustion caused by prolonged stress. Signs include feeling drained, cynical, less effective, and detached. To address burnout: 1) **Acknowledge it**: Recognizing burnout is the first step. 2) **Set boundaries**: Learn to say no and protect your time. 3) **Rest deeply**: Not just sleep, but true disconnection from work/stress. 4) **Seek support**: Talk to friends, family, or a counselor. 5) **Re-evaluate priorities**: Sometimes systems need to change, not just you. Burnout is not weakness — it is a sign you have been strong for too long without support.";
+}
+
+
+// ========================================
+// POSITIVE EMOTIONS HANDLERS
+// ========================================
+
+async function handleFeelingHappy(session) {
+  const dbResponse = await getResponseFromDatabase('feeling_happy', session);
+  return dbResponse ? dbResponse.response :
+    "🌟 That is wonderful to hear! Happiness is something to celebrate, even in small moments. Hold onto this positive energy and let it motivate you to keep moving forward. If something special happened today, I would love to hear about it. Positive moments like this can inspire even greater achievements ahead!";
+}
+
+async function handleGoodNewsCelebration(session) {
+  const dbResponse = await getResponseFromDatabase('good_news_celebration', session);
+  return dbResponse ? dbResponse.response :
+    "🎉 That is amazing! Congratulations on your achievement! Your hard work and dedication paid off. Take a moment to really enjoy this success — you have earned it. This accomplishment shows what you are capable of, and I am confident you will achieve even more great things in the future!";
+}
+
+async function handleFeelingGrateful(session) {
+  const dbResponse = await getResponseFromDatabase('feeling_grateful', session);
+  return dbResponse ? dbResponse.response :
+    "🙏 Gratitude is such a powerful emotion. Research shows that practicing gratitude improves mental health, strengthens relationships, and increases overall happiness. It is beautiful that you are taking time to appreciate the good things in your life. Keep holding onto that positive mindset — it will carry you through challenges when they arise.";
+}
+
+async function handleExcited(session) {
+  const dbResponse = await getResponseFromDatabase('excited', session);
+  return dbResponse ? dbResponse.response :
+    "🎉 That is amazing! Excitement brings positive energy and motivation. Enjoy this moment and let it push you toward even greater achievements. Whatever you are looking forward to, I hope it turns out even better than you expect! Your enthusiasm is contagious!";
+}
+
+async function handlePreparingForEvent(session) {
+  const dbResponse = await getResponseFromDatabase('preparing_for_event', session);
+  return dbResponse ? dbResponse.response :
+    "✨ How exciting! It sounds like something important is coming up. Here are some tips to prepare: 1) **Stay organized**: Make a checklist of what you need to do. 2) **Rest well**: Get good sleep the night before. 3) **Positive visualization**: Imagine yourself succeeding. 4) **Stay calm**: Remember your preparation and trust yourself. You are going to do great!";
+}
+
+async function handleNervousExcited(session) {
+  const dbResponse = await getResponseFromDatabase('nervous_excited', session);
+  return dbResponse ? dbResponse.response :
+    "🦋 That is a perfectly normal combination! Nervous excitement means you care about the outcome and you are ready to take on a challenge. The butterflies you feel are your body preparing you to perform at your best. Channel that energy positively — take deep breaths, stay focused, and trust your preparation. You have got this!";
+}
+
+
+// ========================================
+// LONELINESS INTENT HANDLERS
+// ========================================
+
+async function handleLonely(session) {
+  const dbResponse = await getResponseFromDatabase('lonely', session);
+  return dbResponse ? dbResponse.response :
+    "🤍 I am really sorry you are feeling alone. Loneliness can feel heavy, but please remember that your feelings matter and you are not invisible. Sometimes reaching out to a friend, classmate, or family member can help more than you expect. Even small conversations can rebuild connection. You deserve support and understanding.";
+}
+
+async function handleHowToCopeWithLoneliness(session) {
+  const dbResponse = await getResponseFromDatabase('how_to_cope_loneliness', session);
+  return dbResponse ? dbResponse.response :
+    "💬 Here are ways to address loneliness: 1) **Reach out**: Send a message to someone you have not talked to in a while. 2) **Join activities**: Clubs, classes, or volunteer work can create new connections. 3) **Online communities**: Find groups with shared interests. 4) **Be kind to yourself**: Loneliness does not mean you are unlikeable. 5) **Quality over quantity**: One meaningful connection is better than many shallow ones. 6) **Professional help**: If loneliness feels overwhelming, a therapist can help. Small steps toward connection can make a big difference.";
+}
+
+async function handleNoOneUnderstands(session) {
+  const dbResponse = await getResponseFromDatabase('no_one_understands', session);
+  return dbResponse ? dbResponse.response :
+    "👂 Feeling misunderstood and unheard is deeply painful. Please know that your experiences and feelings are valid, even if others do not fully grasp them right now. Sometimes it helps to: 1) Express yourself clearly: 'I feel ___ when ___ because ___.' 2) Find your people: Seek out those with similar experiences or interests. 3) Be patient: Understanding takes time and effort from both sides. 4) Consider counseling: A therapist can provide the understanding and validation you need. You are not invisible, and you matter.";
+}
+
+async function handleFeelingLeftOut(session) {
+  const dbResponse = await getResponseFromDatabase('feeling_left_out', session);
+  return dbResponse ? dbResponse.response :
+    "💔 Being left out hurts, and your feelings are completely valid. Remember: being excluded says nothing about your worth. Here is what might help: 1) **Initiate**: Invite people to do things with you. 2) **Expand your circle**: Try meeting new people through different activities. 3) **Self-reflection**: Sometimes incompatibility is not personal. 4) **Value yourself**: Your worth is not determined by others inclusion. 5) **Talk about it**: If appropriate, express your feelings to those involved. You deserve to feel included and valued.";
+}
+
+
+// ========================================
+// CONFUSION INTENT HANDLERS
+// ========================================
+
+async function handleConfused(session) {
+  const dbResponse = await getResponseFromDatabase('confused', session);
+  return dbResponse ? dbResponse.response :
+    "🤔 It is completely normal to feel confused when things are unclear. Try breaking the issue into smaller parts and focus on one detail at a time. If you explain what is confusing you, I can try to clarify it step by step. Clarity often comes with patience and careful thinking. What specifically is unclear?";
+}
+
+async function handleDontKnowWhatToDo(session) {
+  const dbResponse = await getResponseFromDatabase('dont_know_what_to_do', session);
+  return dbResponse ? dbResponse.response :
+    "🧭 Feeling lost or stuck is a common experience. Here is how to find direction: 1) **Pause and breathe**: Clarity comes when you are calm. 2) **Identify what you know**: Even small certainties can guide you. 3) **Break it down**: What is one small step you could take today? 4) **Ask for input**: Talk to someone you trust for perspective. 5) **Give yourself grace**: Not having all the answers is okay. 6) **Explore options**: Sometimes you need to try things to find the right path. You do not need to have everything figured out right now.";
+}
+
+async function handleNeedExplanation(session) {
+  const dbResponse = await getResponseFromDatabase('need_explanation', session);
+  return dbResponse ? dbResponse.response :
+    "📖 Of course! I would be happy to help explain. Please tell me: 1) What topic or concept are you trying to understand? 2) What part is confusing? 3) What have you already tried to figure it out? The more details you share, the better I can tailor my explanation to help you understand clearly.";
+}
+
+
+// ========================================
+// ANGER INTENT HANDLERS
+// ========================================
+
+async function handleAngry(session) {
+  const dbResponse = await getResponseFromDatabase('angry', session);
+  return dbResponse ? dbResponse.response :
+    "🔥 Anger is a strong emotion, and it often signals that something feels unfair or upsetting. Before reacting, take a deep breath and give yourself a moment to cool down. Responding calmly can prevent regret later. If you would like to share what happened, I am here to listen without judgment.";
+}
+
+async function handleHowToCalmAnger(session) {
+  const dbResponse = await getResponseFromDatabase('how_to_calm_anger', session);
+  return dbResponse ? dbResponse.response :
+    "🌬️ Here are immediate anger management techniques: 1) **Step away**: Remove yourself from the situation temporarily. 2) **Deep breathing**: Slow, deep breaths activate your calming response. 3) **Count to 10 (or 100)**: Give yourself time before reacting. 4) **Physical release**: Go for a walk, exercise, or punch a pillow. 5) **Write it out**: Express your feelings on paper instead of lashing out. 6) **Address it later**: Once calm, discuss the issue constructively. Remember, feeling anger is normal — it is how you express it that matters.";
+}
+
+async function handleAngryAtSomeone(session) {
+  const dbResponse = await getResponseFromDatabase('angry_at_someone', session);
+  return dbResponse ? dbResponse.response :
+    "😤 It is natural to feel angry when someone hurts or upsets you. Here is what might help: 1) **Cool off first**: Do not respond while emotions are high. 2) **Identify the real issue**: What specifically hurt you? 3) **Communicate clearly**: Use 'I feel ___ when you ___ because ___' statements. 4) **Set boundaries**: Decide what behavior you will and will not accept. 5) **Evaluate the relationship**: Is this person usually respectful? 6) **Forgive (when ready)**: Holding anger hurts you more than them. Your feelings are valid, and you deserve respectful treatment.";
+}
+
+
+// ========================================
+// FRUSTRATION INTENT HANDLERS
+// ========================================
+
+async function handleFrustrated(session) {
+  const dbResponse = await getResponseFromDatabase('frustrated', session);
+  return dbResponse ? dbResponse.response :
+    "⚡ Frustration usually happens when effort does not immediately bring results. That does not mean you are failing — it simply means the process needs adjustment. Take a short break, rethink your approach, and try again with a fresh mindset. Progress is often built through small, repeated efforts. You are closer than you think.";
+}
+
+async function handleNothingIsWorking(session) {
+  const dbResponse = await getResponseFromDatabase('nothing_is_working', session);
+  return dbResponse ? dbResponse.response :
+    "🔄 Repeated setbacks are incredibly frustrating. But remember: failure is not the opposite of success; it is part of the process. Here is what to do: 1) **Step back**: Take a break and return with fresh eyes. 2) **Analyze**: What is not working? What could you change? 3) **Ask for help**: Sometimes a new perspective reveals the solution. 4) **Celebrate effort**: You are trying, and that matters. 5) **Adjust strategy**: Maybe there is a different approach. Every successful person has faced failure many times. Keep going — breakthroughs often come right when you want to give up.";
+}
+
+async function handleTechFrustration(session) {
+  const dbResponse = await getResponseFromDatabase('tech_frustration', session);
+  return dbResponse ? dbResponse.response :
+    "💻 Technology frustration is very real! Here is what to try: 1) **Restart**: Turn it off and back on (seriously, this fixes many issues). 2) **Check connections**: Ensure cables, Wi-Fi, and power are working. 3) **Update**: Sometimes outdated software causes problems. 4) **Google the error**: Someone else likely faced the same issue. 5) **Take a break**: Walk away for 10 minutes and try again. 6) **Ask for help**: IT support, tech-savvy friends, or online forums. You will figure it out!";
+}
+
+async function handleFrustratedWithSelf(session) {
+  const dbResponse = await getResponseFromDatabase('frustrated_with_self', session);
+  return dbResponse ? dbResponse.response :
+    "💙 Being frustrated with yourself is painful. Please remember: You are human, and humans make mistakes, struggle, and learn. Self-compassion is not weakness — it is strength. Ask yourself: Would you speak this harshly to a friend? Probably not. Treat yourself with the same kindness. 1) **Acknowledge the feeling**: 'I am frustrated, and that is okay.' 2) **Learn from it**: 'What can I do differently next time?' 3) **Forgive yourself**: Everyone deserves grace, including you. You are doing better than you think.";
+}
+
 //--------------------------Above Functions for responses--------
 //--------------------------Above Functions for responses--------
 //--------------------------Above Functions for responses--------
@@ -12428,6 +12840,203 @@ async function handleIntent(intent, entities, session, message) {
     
     // ✅ STEP 4: Route to dynamic intent handlers (these need user data)
     switch (intent) {
+        case 'feeling_sad':
+      return await handleFeelingSad(session);
+    
+    case 'why_am_i_sad':
+      return await handleWhyAmISad(session);
+    
+    case 'how_to_stop_sadness':
+      return await handleHowToStopSadness(session);
+    
+    case 'want_to_cry':
+      return await handleWantToCry(session);
+    
+    case 'am_i_depressed':
+      return await handleAmIDepressed(session);
+    
+    case 'feeling_empty':
+      return await handleFeelingEmpty(session);
+    
+    case 'sad_no_reason':
+      return await handleSadNoReason(session);
+    
+    case 'feeling_worthless':
+      return await handleFeelingWorthless(session);
+    
+    
+    // ============ STRESS & ANXIETY INTENTS ============
+    case 'stressed':
+      return await handleStressed(session);
+    
+    case 'how_to_reduce_stress':
+      return await handleHowToReduceStress(session);
+    
+    case 'overwhelmed_tasks':
+      return await handleOverwhelmedTasks(session);
+    
+    case 'stress_physical_symptoms':
+      return await handleStressPhysicalSymptoms(session);
+    
+    case 'nervous':
+      return await handleNervous(session);
+    
+    case 'how_to_calm_anxiety':
+      return await handleHowToCalmAnxiety(session);
+    
+    case 'panic_attack':
+      return await handlePanicAttack(session);
+    
+    case 'worried_about_future':
+      return await handleWorriedAboutFuture(session);
+    
+    case 'exam_anxiety':
+      return await handleExamAnxiety(session);
+    
+    
+    // ============ TIRED & BURNOUT INTENTS ============
+    case 'tired':
+      return await handleTired(session);
+    
+    case 'always_tired':
+      return await handleAlwaysTired(session);
+    
+    case 'how_to_get_energy':
+      return await handleHowToGetEnergy(session);
+    
+    case 'burnout':
+      return await handleBurnout(session);
+    
+    
+    // ============ POSITIVE EMOTIONS ============
+    case 'feeling_happy':
+      return await handleFeelingHappy(session);
+    
+    case 'good_news_celebration':
+      return await handleGoodNewsCelebration(session);
+    
+    case 'feeling_grateful':
+      return await handleFeelingGrateful(session);
+    
+    case 'excited':
+      return await handleExcited(session);
+    
+    case 'preparing_for_event':
+      return await handlePreparingForEvent(session);
+    
+    case 'nervous_excited':
+      return await handleNervousExcited(session);
+    
+    
+    // ============ LONELINESS INTENTS ============
+    case 'lonely':
+      return await handleLonely(session);
+    
+    case 'how_to_cope_loneliness':
+      return await handleHowToCopeWithLoneliness(session);
+    
+    case 'no_one_understands':
+      return await handleNoOneUnderstands(session);
+    
+    case 'feeling_left_out':
+      return await handleFeelingLeftOut(session);
+    
+    
+    // ============ CONFUSION INTENTS ============
+    case 'confused':
+      return await handleConfused(session);
+    
+    case 'dont_know_what_to_do':
+      return await handleDontKnowWhatToDo(session);
+    
+    case 'need_explanation':
+      return await handleNeedExplanation(session);
+    
+    
+    // ============ ANGER INTENTS ============
+    case 'angry':
+      return await handleAngry(session);
+    
+    case 'how_to_calm_anger':
+      return await handleHowToCalmAnger(session);
+    
+    case 'angry_at_someone':
+      return await handleAngryAtSomeone(session);
+    
+    
+    // ============ FRUSTRATION INTENTS ============
+    case 'frustrated':
+      return await handleFrustrated(session);
+    
+    case 'nothing_is_working':
+      return await handleNothingIsWorking(session);
+    
+    case 'tech_frustration':
+      return await handleTechFrustration(session);
+    
+    case 'frustrated_with_self':
+      return await handleFrustratedWithSelf(session);
+    
+    
+    // ============ EXISTING INTENTS ============
+    case 'greeting':
+      return await handleGreeting(session);
+    
+    case 'how_are_you':
+      return await handleHowAreYou(session);
+    
+    case 'goodbye':
+      return await handleGoodbye(session);
+    
+    case 'good_night':
+      return await handleGoodNight(session);
+    
+    case 'thanks':
+      return await handleThanks(session);
+    
+    case 'sorry':
+      return await handleSorry(session);
+    
+    case 'help':
+      return await handleHelp(session);
+    
+    case 'joke':
+      return await handleJoke(session);
+    
+    case 'motivation':
+      return await handleMotivation(session);
+    
+    case 'abusive_language':
+      return await handleAbusiveLanguage(session);
+
+      case 'greeting':
+    response = await handleGreeting(session);
+    break;
+
+  case 'how_are_you':
+    response = await handleHowAreYou(session);
+    break;
+
+  case 'bot_name':
+    response = await handleBotName(session);
+    break;
+
+  case 'friend_request':
+    response = await handleFriendRequest(session);
+    break;
+
+  case 'love_expression':
+    response = await handleLoveExpression(session);
+    break;
+
+  case 'abusive_language':
+    response = await handleAbusiveLanguage(session);
+    break;
+
+  case 'thanks':
+    response = await handleThanks(session);
+    break;
+
       case 'university_location':
     response = await handleUniversityLocation(session);
     break;
@@ -12700,14 +13309,7 @@ async function handleIntent(intent, entities, session, message) {
   
   // DEFAULT
   default:
-    const fallbackDB = await getResponseFromDatabase(intent, session, entities);
-    if (fallbackDB && fallbackDB.response) {
-      return {
-        response: fallbackDB.response,
-        responseTime: Date.now() - startTime,
-        source: 'database'
-      };
-    }
+    response = await handleDefault(session);
     
     const isStudent = session.user_role === 'Student';
     response = isStudent 
@@ -13425,6 +14027,459 @@ console.log("   - Multilingual support (English + Urdu)");
 console.log("   - Mental health support");
 console.log("   - Auto-cleanup (24hrs)");
 
+//--------------------------------End Of Chatbot Points--------------------
+//--------------------------------End Of Chatbot Points--------------------
+//--------------------------------End Of Chatbot Points--------------------
+
+
+
+
+
+//--------------------Mp End Points--------------------------
+//--------------------Mp End Points--------------------------
+// Helper: distance between two GPS coords (Haversine)
+function calculateDistanceBetweenPoints(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ── BOUNDARIES ──────────────────────────────────────────────────────────────
+app.get('/api/campus-map/boundaries/:campusType', (req, res) => {
+    const { campusType } = req.params;
+    db.query(
+        `SELECT latitude, longitude, point_order
+         FROM campus_boundaries
+         WHERE campus_type = ?
+         ORDER BY point_order ASC`,
+        [campusType],
+        (err, boundaries) => {
+            if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            if (boundaries.length === 0)
+                return res.status(404).json({ success: false, message: 'Campus boundaries not found' });
+
+            const lats = boundaries.map(b => parseFloat(b.latitude));
+            const lngs = boundaries.map(b => parseFloat(b.longitude));
+
+            res.json({
+                success: true,
+                campus_type: campusType,
+                boundary_points: boundaries.map(b => ({
+                    lat: parseFloat(b.latitude),
+                    lng: parseFloat(b.longitude),
+                    order: b.point_order
+                })),
+                bounds: {
+                    southwest: { lat: Math.min(...lats), lng: Math.min(...lngs) },
+                    northeast: { lat: Math.max(...lats), lng: Math.max(...lngs) }
+                },
+                center: {
+                    lat: lats.reduce((a, b) => a + b, 0) / lats.length,
+                    lng: lngs.reduce((a, b) => a + b, 0) / lngs.length
+                }
+            });
+        }
+    );
+});
+
+// ── ALL BUILDINGS ────────────────────────────────────────────────────────────
+app.get('/api/campus-map/buildings', (req, res) => {
+    const { campus_type, category_id, zoom_level, major_only } = req.query;
+
+    let query = `
+        SELECT
+            cb.id, cb.name, cb.latitude, cb.longitude,
+            cb.entrance_latitude, cb.entrance_longitude,
+            cb.campus_type, cb.description, cb.floor_count,
+            cb.is_major_building, cb.building_code,
+            cb.operational_hours, cb.phone, cb.email, cb.image_url,
+            bc.name  AS category_name,
+            bc.icon  AS category_icon,
+            bc.color AS category_color,
+            bc.zoom_level_min
+        FROM campus_buildings cb
+        LEFT JOIN building_categories bc ON cb.category_id = bc.id
+        WHERE cb.status = 'active'
+    `;
+    const params = [];
+
+    if (campus_type)    { query += ' AND cb.campus_type = ?';      params.push(campus_type); }
+    if (category_id)    { query += ' AND cb.category_id = ?';      params.push(category_id); }
+    if (zoom_level)     { query += ' AND bc.zoom_level_min <= ?';   params.push(zoom_level); }
+    if (major_only === 'true') { query += ' AND cb.is_major_building = 1'; }
+
+    query += ' ORDER BY cb.is_major_building DESC, cb.name ASC';
+
+    db.query(query, params, (err, buildings) => {
+        if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+
+        if (buildings.length === 0)
+            return res.json({ success: true, count: 0, data: [] });
+
+        // Fetch polygons for each building
+        let done = 0;
+        buildings.forEach((building, idx) => {
+            db.query(
+                `SELECT corner_number, latitude, longitude
+                 FROM building_polygons
+                 WHERE building_id = ?
+                 ORDER BY corner_number`,
+                [building.id],
+                (pErr, polygons) => {
+                    buildings[idx].polygon_coordinates = (!pErr && polygons.length > 0)
+                        ? polygons.map(p => ({ lat: parseFloat(p.latitude), lng: parseFloat(p.longitude), corner: p.corner_number }))
+                        : null;
+                    if (++done === buildings.length)
+                        res.json({ success: true, count: buildings.length, data: buildings });
+                }
+            );
+        });
+    });
+});
+
+// ── SINGLE BUILDING ──────────────────────────────────────────────────────────
+app.get('/api/campus-map/buildings/:id', (req, res) => {
+    db.query(
+        `SELECT cb.*, bc.name AS category_name, bc.icon AS category_icon, bc.color AS category_color
+         FROM campus_buildings cb
+         LEFT JOIN building_categories bc ON cb.category_id = bc.id
+         WHERE cb.id = ? AND cb.status = 'active'`,
+        [req.params.id],
+        (err, buildings) => {
+            if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            if (buildings.length === 0) return res.status(404).json({ success: false, message: 'Building not found' });
+
+            const building = buildings[0];
+            db.query(
+                `SELECT corner_number, latitude, longitude
+                 FROM building_polygons WHERE building_id = ? ORDER BY corner_number`,
+                [building.id],
+                (pErr, polygons) => {
+                    building.polygon_coordinates = (!pErr && polygons.length > 0)
+                        ? polygons.map(p => ({ lat: parseFloat(p.latitude), lng: parseFloat(p.longitude), corner: p.corner_number }))
+                        : null;
+                    res.json({ success: true, data: building });
+                }
+            );
+        }
+    );
+});
+
+// ── SEARCH ───────────────────────────────────────────────────────────────────
+app.get('/api/campus-map/search', (req, res) => {
+    const { q, campus_type } = req.query;
+    if (!q || q.trim().length < 2)
+        return res.status(400).json({ success: false, message: 'Search query must be at least 2 characters' });
+
+    let query = `
+        SELECT cb.id, cb.name, cb.latitude, cb.longitude,
+               cb.entrance_latitude, cb.entrance_longitude,
+               cb.campus_type, cb.description,
+               cb.is_major_building, cb.building_code,
+               bc.name AS category_name, bc.icon AS category_icon, bc.color AS category_color
+        FROM campus_buildings cb
+        LEFT JOIN building_categories bc ON cb.category_id = bc.id
+        WHERE cb.status = 'active'
+          AND (cb.name LIKE ? OR cb.description LIKE ? OR cb.building_code LIKE ? OR bc.name LIKE ?)
+    `;
+    const s = `%${q}%`;
+    const params = [s, s, s, s];
+
+    if (campus_type) { query += ' AND cb.campus_type = ?'; params.push(campus_type); }
+    query += ' ORDER BY cb.is_major_building DESC, cb.name ASC LIMIT 20';
+
+    db.query(query, params, (err, buildings) => {
+        if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+        res.json({ success: true, count: buildings.length, data: buildings });
+    });
+});
+
+// ── NEARBY ───────────────────────────────────────────────────────────────────
+app.get('/api/campus-map/nearby', (req, res) => {
+    const { latitude, longitude, radius } = req.query;
+    if (!latitude || !longitude)
+        return res.status(400).json({ success: false, message: 'Latitude and longitude are required' });
+
+    const radiusMeters = radius || 500;
+
+    db.query(
+        `SELECT cb.*, bc.name AS category_name, bc.icon AS category_icon, bc.color AS category_color,
+                (6371000 * ACOS(
+                    COS(RADIANS(?)) * COS(RADIANS(cb.latitude)) *
+                    COS(RADIANS(cb.longitude) - RADIANS(?)) +
+                    SIN(RADIANS(?)) * SIN(RADIANS(cb.latitude))
+                )) AS distance_meters
+         FROM campus_buildings cb
+         LEFT JOIN building_categories bc ON cb.category_id = bc.id
+         WHERE cb.status = 'active'
+         HAVING distance_meters <= ?
+         ORDER BY distance_meters ASC
+         LIMIT 20`,
+        [latitude, longitude, latitude, radiusMeters],
+        (err, buildings) => {
+            if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            res.json({
+                success: true,
+                center: { lat: parseFloat(latitude), lng: parseFloat(longitude) },
+                radius_meters: parseInt(radiusMeters),
+                count: buildings.length,
+                data: buildings.map(b => ({ ...b, distance_meters: Math.round(parseFloat(b.distance_meters)) }))
+            });
+        }
+    );
+});
+
+// ── ROUTE ────────────────────────────────────────────────────────────────────
+app.post('/api/campus-map/route', (req, res) => {
+    const { from_building_id, to_building_id, from_latitude, from_longitude } = req.body;
+
+    if (!to_building_id)
+        return res.status(400).json({ success: false, message: 'to_building_id is required' });
+
+    db.query(
+        `SELECT * FROM campus_buildings WHERE id = ? AND status = 'active'`,
+        [to_building_id],
+        (err, toBuildings) => {
+            if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            if (toBuildings.length === 0)
+                return res.status(404).json({ success: false, message: 'Destination building not found' });
+
+            const toBuilding = toBuildings[0];
+
+            // ── From current GPS location ──
+            if (from_latitude && from_longitude && !from_building_id) {
+                const fromLat = parseFloat(from_latitude);
+                const fromLng = parseFloat(from_longitude);
+                const toLat   = parseFloat(toBuilding.entrance_latitude || toBuilding.latitude);
+                const toLng   = parseFloat(toBuilding.entrance_longitude || toBuilding.longitude);
+                const dist    = calculateDistanceBetweenPoints(fromLat, fromLng, toLat, toLng);
+                const eta     = Math.ceil(dist / 1.4);
+
+                return res.json({
+                    success: true,
+                    from: { id: -1, name: 'Current Location', latitude: from_latitude, longitude: from_longitude },
+                    to: toBuilding,
+                    routes: [{ path_id: null, coordinates: [{ lat: fromLat, lng: fromLng }, { lat: toLat, lng: toLng }],
+                        waypoints: [], distance_meters: Math.round(dist),
+                        estimated_time_seconds: eta, estimated_time_minutes: Math.ceil(eta / 60),
+                        path_type: 'direct', is_accessible: true }]
+                });
+            }
+
+            if (!from_building_id)
+                return res.status(400).json({ success: false, message: 'Either from_building_id or from_latitude/longitude required' });
+
+            // ── From building ──
+            db.query(
+                `SELECT * FROM campus_buildings WHERE id = ? AND status = 'active'`,
+                [from_building_id],
+                (err2, fromBuildings) => {
+                    if (err2) return res.status(500).json({ success: false, message: 'DB error', error: err2.message });
+                    if (fromBuildings.length === 0)
+                        return res.status(404).json({ success: false, message: 'Source building not found' });
+
+                    const fromBuilding = fromBuildings[0];
+
+                    db.query(
+                        `SELECT * FROM campus_paths
+                         WHERE from_building_id = ? AND to_building_id = ?
+                         ORDER BY path_type = 'main' DESC, distance_meters ASC
+                         LIMIT 1`,
+                        [from_building_id, to_building_id],
+                        (err3, paths) => {
+                            if (err3) return res.status(500).json({ success: false, message: 'DB error', error: err3.message });
+
+                            if (paths.length > 0) {
+                                const path = paths[0];
+                                db.query(
+                                    `SELECT waypoint_order, latitude, longitude, waypoint_name
+                                     FROM path_waypoints WHERE path_id = ? ORDER BY waypoint_order`,
+                                    [path.id],
+                                    (err4, waypoints) => {
+                                        const coords = JSON.parse(path.path_coordinates);
+                                        res.json({
+                                            success: true, from: fromBuilding, to: toBuilding,
+                                            routes: [{ path_id: path.id, coordinates: coords,
+                                                waypoints: (waypoints || []).map(w => ({
+                                                    order: w.waypoint_order,
+                                                    lat: parseFloat(w.latitude),
+                                                    lng: parseFloat(w.longitude),
+                                                    name: w.waypoint_name
+                                                })),
+                                                distance_meters: parseFloat(path.distance_meters),
+                                                estimated_time_seconds: path.estimated_time_seconds,
+                                                estimated_time_minutes: Math.ceil(path.estimated_time_seconds / 60),
+                                                path_type: path.path_type,
+                                                is_accessible: path.is_accessible }]
+                                        });
+                                    }
+                                );
+                            } else {
+                                // Straight-line fallback
+                                const fromLat = parseFloat(fromBuilding.entrance_latitude || fromBuilding.latitude);
+                                const fromLng = parseFloat(fromBuilding.entrance_longitude || fromBuilding.longitude);
+                                const toLat   = parseFloat(toBuilding.entrance_latitude || toBuilding.latitude);
+                                const toLng   = parseFloat(toBuilding.entrance_longitude || toBuilding.longitude);
+                                const dist    = calculateDistanceBetweenPoints(fromLat, fromLng, toLat, toLng);
+                                const eta     = Math.ceil(dist / 1.4);
+
+                                res.json({
+                                    success: true, from: fromBuilding, to: toBuilding,
+                                    routes: [{ path_id: null,
+                                        coordinates: [{ lat: fromLat, lng: fromLng }, { lat: toLat, lng: toLng }],
+                                        waypoints: [], distance_meters: Math.round(dist),
+                                        estimated_time_seconds: eta, estimated_time_minutes: Math.ceil(eta / 60),
+                                        path_type: 'estimated', is_accessible: true, note: 'Estimated direct route' }]
+                                });
+                            }
+                        }
+                    );
+                }
+            );
+        }
+    );
+});
+
+// ── CATEGORIES ───────────────────────────────────────────────────────────────
+app.get('/api/campus-map/categories', (req, res) => {
+    db.query('SELECT * FROM building_categories ORDER BY name ASC', (err, categories) => {
+        if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+        res.json({ success: true, count: categories.length, data: categories });
+    });
+});
+
+// ── INIT (everything in one call) ────────────────────────────────────────────
+app.get('/api/campus-map/init/:campusType', (req, res) => {
+    const { campusType } = req.params;
+
+    db.query(
+        `SELECT latitude, longitude, point_order
+         FROM campus_boundaries WHERE campus_type = ? ORDER BY point_order ASC`,
+        [campusType],
+        (err, boundaries) => {
+            if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            if (boundaries.length === 0)
+                return res.status(404).json({ success: false, message: 'Campus not found' });
+
+            db.query(
+                `SELECT cb.*, bc.name AS category_name, bc.icon AS category_icon,
+                        bc.color AS category_color, bc.zoom_level_min
+                 FROM campus_buildings cb
+                 LEFT JOIN building_categories bc ON cb.category_id = bc.id
+                 WHERE cb.status = 'active' AND cb.campus_type = ?
+                 ORDER BY cb.is_major_building DESC, cb.name ASC`,
+                [campusType],
+                (err2, buildings) => {
+                    if (err2) return res.status(500).json({ success: false, message: 'DB error', error: err2.message });
+
+                    db.query('SELECT * FROM building_categories ORDER BY name ASC', (err3, categories) => {
+                        if (err3) return res.status(500).json({ success: false, message: 'DB error', error: err3.message });
+
+                        if (buildings.length === 0) {
+                            const lats = boundaries.map(b => parseFloat(b.latitude));
+                            const lngs = boundaries.map(b => parseFloat(b.longitude));
+                            return res.json({
+                                success: true, campus_type: campusType,
+                                boundaries: {
+                                    points: boundaries.map(b => ({ lat: parseFloat(b.latitude), lng: parseFloat(b.longitude), order: b.point_order })),
+                                    bounds: { southwest: { lat: Math.min(...lats), lng: Math.min(...lngs) }, northeast: { lat: Math.max(...lats), lng: Math.max(...lngs) } },
+                                    center: { lat: lats.reduce((a, b) => a + b, 0) / lats.length, lng: lngs.reduce((a, b) => a + b, 0) / lngs.length }
+                                },
+                                buildings: { count: 0, data: [] },
+                                categories: { count: categories.length, data: categories }
+                            });
+                        }
+
+                        // Attach polygon data
+                        let done = 0;
+                        buildings.forEach((building, idx) => {
+                            db.query(
+                                `SELECT corner_number, latitude, longitude
+                                 FROM building_polygons WHERE building_id = ? ORDER BY corner_number`,
+                                [building.id],
+                                (pErr, polygons) => {
+                                    buildings[idx].polygon_coordinates = (!pErr && polygons.length > 0)
+                                        ? polygons.map(p => ({ lat: parseFloat(p.latitude), lng: parseFloat(p.longitude), corner: p.corner_number }))
+                                        : null;
+
+                                    if (++done === buildings.length) {
+                                        const lats = boundaries.map(b => parseFloat(b.latitude));
+                                        const lngs = boundaries.map(b => parseFloat(b.longitude));
+                                        res.json({
+                                            success: true, campus_type: campusType,
+                                            boundaries: {
+                                                points: boundaries.map(b => ({ lat: parseFloat(b.latitude), lng: parseFloat(b.longitude), order: b.point_order })),
+                                                bounds: { southwest: { lat: Math.min(...lats), lng: Math.min(...lngs) }, northeast: { lat: Math.max(...lats), lng: Math.max(...lngs) } },
+                                                center: { lat: lats.reduce((a, b) => a + b, 0) / lats.length, lng: lngs.reduce((a, b) => a + b, 0) / lngs.length }
+                                            },
+                                            buildings: { count: buildings.length, data: buildings },
+                                            categories: { count: categories.length, data: categories }
+                                        });
+                                    }
+                                }
+                            );
+                        });
+                    });
+                }
+            );
+        }
+    );
+});
+
+// ── FAVORITES ────────────────────────────────────────────────────────────────
+app.get('/api/campus-map/favorites/:userId', (req, res) => {
+    db.query(
+        `SELECT uf.id AS favorite_id, uf.nickname, uf.created_at,
+                cb.*, bc.name AS category_name, bc.icon AS category_icon, bc.color AS category_color
+         FROM user_favorites uf
+         JOIN campus_buildings cb ON uf.building_id = cb.id
+         LEFT JOIN building_categories bc ON cb.category_id = bc.id
+         WHERE uf.user_id = ?
+         ORDER BY uf.created_at DESC`,
+        [req.params.userId],
+        (err, favorites) => {
+            if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            res.json({ success: true, count: favorites.length, data: favorites });
+        }
+    );
+});
+
+app.post('/api/campus-map/favorites', (req, res) => {
+    const { user_id, building_id, nickname } = req.body;
+    if (!user_id || !building_id)
+        return res.status(400).json({ success: false, message: 'user_id and building_id are required' });
+
+    db.query(
+        'INSERT INTO user_favorites (user_id, building_id, nickname) VALUES (?, ?, ?)',
+        [user_id, building_id, nickname || null],
+        (err, result) => {
+            if (err) {
+                if (err.code === 'ER_DUP_ENTRY')
+                    return res.status(409).json({ success: false, message: 'Building already in favorites' });
+                return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+            }
+            res.status(201).json({ success: true, message: 'Building added to favorites',
+                data: { favorite_id: result.insertId, user_id, building_id, nickname } });
+        }
+    );
+});
+
+app.delete('/api/campus-map/favorites/:favoriteId', (req, res) => {
+    db.query('DELETE FROM user_favorites WHERE id = ?', [req.params.favoriteId], (err, result) => {
+        if (err) return res.status(500).json({ success: false, message: 'DB error', error: err.message });
+        if (result.affectedRows === 0)
+            return res.status(404).json({ success: false, message: 'Favorite not found' });
+        res.json({ success: true, message: 'Favorite removed successfully' });
+    });
+});
+
+console.log('✅ Campus Map endpoints initialized (callback style)');
 
 // ================= START SERVER =================
 const PORT = 3000;
