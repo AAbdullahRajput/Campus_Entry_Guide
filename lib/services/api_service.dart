@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class ApiService {
   // Base URL for backend
   // static const String baseUrl = 'http://10.0.2.2:3000'; // Android emulator
-  static const String baseUrl = 'http://192.168.0.109:3000';
+  static const String baseUrl = 'https://campusentryguide-production.up.railway.app';
   // For iOS simulator use: 'http://localhost:3000'
   // For physical device use: 'http://192.168.208.1:3000'
 
