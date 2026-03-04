@@ -103,7 +103,7 @@ class _EnhancedMapPageState extends State<EnhancedMapPage>
   Timer? _locationTimer;
 
   // ── API ────────────────────────────────────────────────────────────────────
-  final String _apiBaseUrl = 'http://192.168.0.109:3000/api/campus-map';
+  final String _apiBaseUrl = 'https://campusentryguide-production.up.railway.app/api/campus-map';
 
   final List<String> _debugLogs = [];
 

@@ -58,7 +58,7 @@ class _ReportsHandlingPageState extends State<ReportsHandlingPage> {
     try {
       // Replace with: ApiConfig.getAdminLostFoundReports
       final response = await http.get(
-        Uri.parse('http://192.168.0.109:3000/get-admin-lost-found-reports'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-admin-lost-found-reports'),
       );
 
       if (response.statusCode == 200) {
@@ -113,7 +113,7 @@ class _ReportsHandlingPageState extends State<ReportsHandlingPage> {
 
       // Replace with: ApiConfig.deleteLostFoundItem
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/delete-lost-found-item'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/delete-lost-found-item'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'itemId': itemId,

@@ -52,7 +52,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
   Future<void> _loadOptions() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.109:3000/get-complaint-options'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-complaint-options'),
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -71,7 +71,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-admin-complaints'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-admin-complaints'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'reporterRole': _currentTab == 'all' ? null : (_currentTab == 'student' ? 'Student' : 'Teacher'),
@@ -115,7 +115,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/update-complaint-status'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/update-complaint-status'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'complaintId': complaintId,
@@ -203,7 +203,7 @@ class _AdminComplaintHandlingPageState extends State<AdminComplaintHandlingPage>
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/delete-complaint'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/delete-complaint'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'complaintId': complaintId,

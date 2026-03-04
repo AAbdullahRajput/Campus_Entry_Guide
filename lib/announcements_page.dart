@@ -75,7 +75,7 @@ class _AnnouncementsManagementPageState extends State<AnnouncementsManagementPag
   String selectedOwnership = 'All'; 
   final ImagePicker _imagePicker = ImagePicker();
 
-  final String baseUrl = 'http://192.168.0.109:3000';
+  final String baseUrl = 'https://campusentryguide-production.up.railway.app';
 
   @override
   void initState() {

@@ -218,7 +218,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       print("📤 Sending update request: ${updateData.keys}");
 
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/update-user-profile'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/update-user-profile'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(updateData),
       ).timeout(

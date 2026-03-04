@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatbotService {
-  static const String baseUrl = "http://192.168.0.109:3000";
+  static const String baseUrl = "https://campusentryguide-production.up.railway.app";
 
   static Future<Map<String, dynamic>> sendMessage({
     required int userId,

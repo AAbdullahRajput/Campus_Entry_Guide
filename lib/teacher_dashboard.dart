@@ -400,7 +400,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
       if (session == null) return;
       
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-unread-count'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-unread-count'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': session['userId'],
@@ -425,7 +425,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> with WidgetsBinding
       if (session == null) return;
       
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-unviewed-complaints-count'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-unviewed-complaints-count'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': session['userId'],

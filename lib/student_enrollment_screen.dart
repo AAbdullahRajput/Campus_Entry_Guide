@@ -43,7 +43,7 @@ class _StudentSelfEnrollmentScreenState extends State<StudentSelfEnrollmentScree
       print('📚 Fetching courses for self-enrollment...');
       
       final availableResponse = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-courses-for-self-enrollment'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-courses-for-self-enrollment'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,
@@ -56,7 +56,7 @@ class _StudentSelfEnrollmentScreenState extends State<StudentSelfEnrollmentScree
       print('📋 Fetching enrolled courses...');
       
       final enrolledResponse = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-self-enrolled-courses'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-self-enrolled-courses'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'student_id': widget.userId}),
       ).timeout(const Duration(seconds: 10));
@@ -377,7 +377,7 @@ class _StudentSelfEnrollmentScreenState extends State<StudentSelfEnrollmentScree
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/self-enroll-in-course'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/self-enroll-in-course'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,
@@ -474,7 +474,7 @@ class _StudentSelfEnrollmentScreenState extends State<StudentSelfEnrollmentScree
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/unenroll-from-course'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/unenroll-from-course'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,

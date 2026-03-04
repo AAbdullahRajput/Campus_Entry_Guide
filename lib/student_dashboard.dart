@@ -409,7 +409,7 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
       if (session == null) return;
       
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-unread-count'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-unread-count'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': session['userId'],
@@ -441,7 +441,7 @@ Future<void> _fetchUnreadComplaintsCount() async {
     if (session == null) return;
     
     final response = await http.post(
-      Uri.parse('http://192.168.0.109:3000/get-unviewed-complaints-count'), // ✅ CHANGED
+      Uri.parse('https://campusentryguide-production.up.railway.app/get-unviewed-complaints-count'), // ✅ CHANGED
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'userId': session['userId'],

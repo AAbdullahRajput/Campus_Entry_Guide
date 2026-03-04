@@ -79,7 +79,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     try {
       // Replace with: ApiConfig.getLostFoundOptions
       final response = await http.get(
-        Uri.parse('http://192.168.0.109:3000/get-lost-found-options'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-lost-found-options'),
       );
 
       if (response.statusCode == 200) {
@@ -104,7 +104,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     try {
       // Replace with: ApiConfig.getLostFoundItems
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/get-lost-found-items'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/get-lost-found-items'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'userId': userId,
@@ -206,7 +206,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     print('📤 Sending request body: ${json.encode(requestBody)}');
 
     final response = await http.post(
-      Uri.parse('http://192.168.0.109:3000/report-lost-found-item'),
+      Uri.parse('https://campusentryguide-production.up.railway.app/report-lost-found-item'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(requestBody),
     );
@@ -291,7 +291,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     try {
       // Replace with: ApiConfig.claimItem
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/claim-item'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/claim-item'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'itemId': item['id'],
@@ -404,7 +404,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     try {
       // Replace with: ApiConfig.verifyItem
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/verify-item'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/verify-item'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'itemId': item['id'],
@@ -474,7 +474,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     try {
       // Replace with: ApiConfig.deleteLostFoundItem
       final response = await http.post(
-        Uri.parse('http://192.168.0.109:3000/delete-lost-found-item'),
+        Uri.parse('https://campusentryguide-production.up.railway.app/delete-lost-found-item'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'itemId': item['id'],
