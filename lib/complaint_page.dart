@@ -115,7 +115,7 @@ Future<void> _markAllComplaintsAsViewed() async {
     if (session == null) return;
     
     final response = await http.post(
-      Uri.parse('http://192.168.100.63:3000/mark-all-complaints-viewed'),
+      Uri.parse('http://192.168.0.109:3000/mark-all-complaints-viewed'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'userId': session['userId'],
@@ -134,7 +134,7 @@ Future<void> _markAllComplaintsAsViewed() async {
   Future<void> _loadOptions() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.100.63:3000/get-complaint-options'),
+        Uri.parse('http://192.168.0.109:3000/get-complaint-options'),
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -187,7 +187,7 @@ Future<void> _loadComplaints() async {
     print('📤 Sending request with body: $requestBody');
     
     final response = await http.post(
-      Uri.parse('http://192.168.100.63:3000/get-user-complaints'),
+      Uri.parse('http://192.168.0.109:3000/get-user-complaints'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(requestBody),
     );
@@ -286,7 +286,7 @@ Future<void> _submitComplaint() async {
     print('📤 Request body: ${json.encode(requestBody)}');
     
     final response = await http.post(
-      Uri.parse('http://192.168.100.63:3000/create-complaint'),
+      Uri.parse('http://192.168.0.109:3000/create-complaint'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(requestBody),
     );
@@ -321,7 +321,7 @@ Future<void> _submitComplaint() async {
     try {
       final imageBase64 = await _imageToBase64(_image);
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/update-complaint'),
+        Uri.parse('http://192.168.0.109:3000/update-complaint'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'complaintId': complaintId,
@@ -373,7 +373,7 @@ Future<void> _submitComplaint() async {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/delete-complaint'),
+        Uri.parse('http://192.168.0.109:3000/delete-complaint'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'complaintId': complaintId,
@@ -427,7 +427,7 @@ Future<void> _submitComplaint() async {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/verify-complaint'),
+        Uri.parse('http://192.168.0.109:3000/verify-complaint'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'complaintId': complaintId,
@@ -453,7 +453,7 @@ Future<void> _submitComplaint() async {
   Future<void> _loadComments(int complaintId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-complaint-comments'),
+        Uri.parse('http://192.168.0.109:3000/get-complaint-comments'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'complaintId': complaintId}),
       );
@@ -481,7 +481,7 @@ Future<void> _submitComplaint() async {
 
   try {
     final response = await http.post(
-      Uri.parse('http://192.168.100.63:3000/add-complaint-comment'),
+      Uri.parse('http://192.168.0.109:3000/add-complaint-comment'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'complaintId': complaintId,

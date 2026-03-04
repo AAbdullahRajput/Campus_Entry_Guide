@@ -39,7 +39,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       print('📚 Fetching subjects for teacher ${widget.teacherId}...');
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-teacher-subjects-grouped'),
+        Uri.parse('http://192.168.0.109:3000/get-teacher-subjects-grouped'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'teacher_id': widget.teacherId}),
       ).timeout(const Duration(seconds: 10));
@@ -134,7 +134,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
   Future<void> _checkActiveSession(Map<String, dynamic> subject, Map<String, dynamic> section) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-active-session'),
+        Uri.parse('http://192.168.0.109:3000/get-active-session'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -165,7 +165,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-subject-sections'),
+        Uri.parse('http://192.168.0.109:3000/get-subject-sections'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -628,7 +628,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-section-students-attendance'),
+        Uri.parse('http://192.168.0.109:3000/get-section-students-attendance'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -1101,7 +1101,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/add-single-attendance-record'),
+        Uri.parse('http://192.168.0.109:3000/add-single-attendance-record'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -1169,7 +1169,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-section-students-attendance'),
+        Uri.parse('http://192.168.0.109:3000/get-section-students-attendance'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -1214,7 +1214,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-student-attendance-by-course'),
+        Uri.parse('http://192.168.0.109:3000/get-student-attendance-by-course'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': student['student_id'],
@@ -1594,7 +1594,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/start-attendance-session'),
+        Uri.parse('http://192.168.0.109:3000/start-attendance-session'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -1722,7 +1722,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
   Future<void> _endAttendanceSession(int sessionId, BuildContext dialogContext) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/end-attendance-session'),
+        Uri.parse('http://192.168.0.109:3000/end-attendance-session'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'session_id': sessionId,
@@ -1785,7 +1785,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/update-single-attendance-record'),
+        Uri.parse('http://192.168.0.109:3000/update-single-attendance-record'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'record_id': recordId,
@@ -1849,7 +1849,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/delete-attendance-record'),
+        Uri.parse('http://192.168.0.109:3000/delete-attendance-record'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'record_id': recordId,
@@ -2344,7 +2344,7 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       }).toList();
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/mark-attendance-by-course'),
+        Uri.parse('http://192.168.0.109:3000/mark-attendance-by-course'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacher_id': widget.teacherId,
@@ -2651,7 +2651,7 @@ class _SessionStatisticsState extends State<_SessionStatistics> {
   Future<void> _loadStatistics() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-session-statistics'),
+        Uri.parse('http://192.168.0.109:3000/get-session-statistics'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'session_id': widget.sessionId,

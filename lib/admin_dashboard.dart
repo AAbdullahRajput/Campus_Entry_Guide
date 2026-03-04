@@ -413,7 +413,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
       if (session == null) return;
       
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-unread-count'),
+        Uri.parse('http://192.168.0.109:3000/get-unread-count'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': session['userId'],
@@ -438,7 +438,7 @@ class _AdminDashboardState extends State<AdminDashboard> with WidgetsBindingObse
     if (session == null) return;
     
     final response = await http.post(
-      Uri.parse('http://192.168.100.63:3000/get-admin-complaints'),
+      Uri.parse('http://192.168.0.109:3000/get-admin-complaints'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'reporterRole': null,
@@ -843,7 +843,7 @@ onTap: () async {
   if (session != null) {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-admin-complaints'),
+        Uri.parse('http://192.168.0.109:3000/get-admin-complaints'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'reporterRole': null,

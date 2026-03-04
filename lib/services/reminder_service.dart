@@ -6,7 +6,7 @@ import '../services/notification_service.dart';
 
 
 class ReminderService {
-  static const String baseUrl = "http://192.168.100.63:3000";
+  static const String baseUrl = "http://192.168.0.109:3000";
   static Timer? _reminderCheckTimer;
   static final Set<String> _notifiedReminders = {}; // Changed to String for date tracking
 

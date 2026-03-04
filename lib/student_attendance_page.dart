@@ -56,7 +56,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage>
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/check-face-registered'),
+        Uri.parse('http://192.168.0.109:3000/check-face-registered'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'student_id': widget.userId}),
       ).timeout(const Duration(seconds: 10));
@@ -82,7 +82,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage>
       print('Fetching attendance for student ID: ${widget.userId}');
       
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-student-attendance-details'),
+        Uri.parse('http://192.168.0.109:3000/get-student-attendance-details'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'student_id': widget.userId}),
       ).timeout(const Duration(seconds: 10));
@@ -439,7 +439,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage>
       );
 
       final checkResponse = await http.post(
-        Uri.parse('http://192.168.100.63:3000/check-session-for-student'),
+        Uri.parse('http://192.168.0.109:3000/check-session-for-student'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,
@@ -665,7 +665,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage>
       );
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/mark-gps-attendance'),
+        Uri.parse('http://192.168.0.109:3000/mark-gps-attendance'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,
@@ -732,7 +732,7 @@ class _StudentAttendancePageState extends State<StudentAttendancePage>
 
       // Check if teacher allows face recognition for this session
       final checkResponse = await http.post(
-        Uri.parse('http://192.168.100.63:3000/check-session-for-student'),
+        Uri.parse('http://192.168.0.109:3000/check-session-for-student'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,
@@ -2092,7 +2092,7 @@ class _FaceRegistrationPageState extends State<FaceRegistrationPage> {
       final faceDescriptor = await _extractFaceDescriptor(bytes);
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/register-student-face'),
+        Uri.parse('http://192.168.0.109:3000/register-student-face'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,
@@ -2476,7 +2476,7 @@ class _FaceVerificationPageState extends State<FaceVerificationPage> {
 
       // SEND WITH GPS COORDINATES
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/mark-face-attendance'),
+        Uri.parse('http://192.168.0.109:3000/mark-face-attendance'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'student_id': widget.userId,

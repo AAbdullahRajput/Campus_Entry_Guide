@@ -58,7 +58,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/change-password'),
+        Uri.parse('http://192.168.0.109:3000/change-password'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': userId,

@@ -156,8 +156,8 @@ class _ClassSchedulingScreenState extends State<ClassSchedulingScreen> {
     }
 
       final url = widget.userRole == 'Teacher'
-          ? Uri.parse("http://192.168.100.63:3000/get-teacher-schedules")
-          : Uri.parse("http://192.168.100.63:3000/get-student-schedules");
+          ? Uri.parse("http://192.168.0.109:3000/get-teacher-schedules")
+          : Uri.parse("http://192.168.0.109:3000/get-student-schedules");
 
       final body = widget.userRole == 'Teacher'
           ? {
@@ -346,7 +346,7 @@ class _ClassSchedulingScreenState extends State<ClassSchedulingScreen> {
       print('📤 Uploading to server...');
 
       final response = await http.post(
-        Uri.parse("http://192.168.100.63:3000/upload-timetable"),
+        Uri.parse("http://192.168.0.109:3000/upload-timetable"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "userId": widget.userId,
@@ -689,7 +689,7 @@ class _ClassSchedulingScreenState extends State<ClassSchedulingScreen> {
       print('   User Role: ${widget.userRole}');
 
       final response = await http.post(
-        Uri.parse("http://192.168.100.63:3000/create-class-schedule"),
+        Uri.parse("http://192.168.0.109:3000/create-class-schedule"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "subject_name": subject,
@@ -844,7 +844,7 @@ class _ClassSchedulingScreenState extends State<ClassSchedulingScreen> {
       print('🔄 Sending PDF for preview...');
 
       final response = await http.post(
-        Uri.parse("http://192.168.100.63:3000/read-timetable-pdf"),
+        Uri.parse("http://192.168.0.109:3000/read-timetable-pdf"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"pdfBase64": base64Pdf}),
       );
@@ -942,7 +942,7 @@ class _ClassSchedulingScreenState extends State<ClassSchedulingScreen> {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.100.63:3000/update-class-schedule"),
+        Uri.parse("http://192.168.0.109:3000/update-class-schedule"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "schedule_id": scheduleId,
@@ -985,7 +985,7 @@ class _ClassSchedulingScreenState extends State<ClassSchedulingScreen> {
   Future<void> _deleteSchedule(int scheduleId) async {
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.100.63:3000/delete-class-schedule"),
+        Uri.parse("http://192.168.0.109:3000/delete-class-schedule"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "schedule_id": scheduleId,

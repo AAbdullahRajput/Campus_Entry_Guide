@@ -3,7 +3,7 @@ class ApiConfig {
   // For iOS Simulator: use localhost or 127.0.0.1
   // For Real Device: use your computer's local IP (e.g., 192.168.1.x)
   
-  static const String baseUrl = 'http://192.168.100.63:3000';
+  static const String baseUrl = 'http://192.168.0.109:3000';
   
   // Alternative: Automatically detect platform
   // static String get baseUrl {

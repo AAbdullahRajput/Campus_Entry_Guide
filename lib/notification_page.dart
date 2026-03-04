@@ -70,7 +70,7 @@ class _NotificationPageState extends State<NotificationPage> {
   String? userRole;
   String? userName;
 
-  final String baseUrl = 'http://192.168.100.63:3000';
+  final String baseUrl = 'http://192.168.0.109:3000';
 
   @override
   void initState() {

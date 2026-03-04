@@ -49,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
       print("📋 Fetching profile for User ID: $userId, Role: $role");
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-user-profile'),
+        Uri.parse('http://192.168.0.109:3000/get-user-profile'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'userId': userId,
@@ -101,7 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
       print('📊 Fetching attendance stats for student ID: $userId');
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-student-attendance-stats'),
+        Uri.parse('http://192.168.0.109:3000/get-student-attendance-stats'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'student_id': userId}),
       ).timeout(const Duration(seconds: 10));
@@ -134,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
       print('📊 Fetching teacher statistics for ID: $userId');
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-teacher-statistics'),
+        Uri.parse('http://192.168.0.109:3000/get-teacher-statistics'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'teacher_id': userId}),
       ).timeout(const Duration(seconds: 10));
@@ -167,7 +167,7 @@ class _ProfilePageState extends State<ProfilePage> {
       print('📊 Fetching admin statistics for ID: $userId');
 
       final response = await http.post(
-        Uri.parse('http://192.168.100.63:3000/get-admin-statistics'),
+        Uri.parse('http://192.168.0.109:3000/get-admin-statistics'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'admin_id': userId}),
       ).timeout(const Duration(seconds: 10));
