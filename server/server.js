@@ -48,13 +48,13 @@ const db = mysql.createPool({
 
 console.log('✅ Database pool created');
 
-db.connect((err) => {
-  if (err) {
-    console.error("❌ MySQL Connection Error:", err);
-    return;
-  }
-  console.log("✅ MySQL Connected!");
-});
+// db.connect((err) => {
+//   if (err) {
+//     console.error("❌ MySQL Connection Error:", err);
+//     return;
+//   }
+//   console.log("✅ MySQL Connected!");
+// });
 
 // ================= HELPER FUNCTIONS =================
 const hashPassword = async (password) => {
